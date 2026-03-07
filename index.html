@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ВЕЛИКОЕ ШАЛОПАЙСТВО</title>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Caveat:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --cardboard: #d4b896;
+    --dark: #1a1008;
+    --red: #c0392b;
+    --yellow: #f1c40f;
+    --blue: #2980b9;
+    --ink: #2c1810;
+    --tape: rgba(255,230,100,0.6);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--cream); color: var(--ink);
+    font-family: 'Caveat', cursive; overflow-x: hidden;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ctext y='28' font-size='28'%3E🎭%3C/text%3E%3C/svg%3E"), auto;
+  }
+  body::before {
+    content: ''; position: fixed; top:0; left:0; right:0; bottom:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 9999; opacity: 0.4;
+  }
+
+  /* CURTAIN */
+  #curtain-overlay { position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;display:flex;pointer-events:all; }
+  .curtain-left,.curtain-right {
+    width:50%;height:100%;
+    background: repeating-linear-gradient(90deg,rgba(0,0,0,0.1) 0px,rgba(0,0,0,0) 4px,rgba(0,0,0,0.05) 8px),
+                linear-gradient(180deg,#8b0000 0%,#c0392b 30%,#96281b 70%,#6c1a12 100%);
+    position:relative; transition:transform 1.4s cubic-bezier(0.77,0,0.175,1); overflow:hidden;
+  }
+  .curtain-left::before,.curtain-right::before {
+    content:'';position:absolute;top:0;bottom:0;width:40px;
+    background:repeating-linear-gradient(90deg,rgba(0,0,0,0.2) 0px,rgba(255,255,255,0.05) 2px,rgba(0,0,0,0.15) 4px);
+  }
+  .curtain-left::before{right:0;}.curtain-right::before{left:0;}
+  .curtain-left::after,.curtain-right::after {
+    content:'||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||';
+    position:absolute;top:0;writing-mode:vertical-lr;color:var(--yellow);font-size:14px;letter-spacing:-2px;text-shadow:0 0 8px rgba(241,196,15,0.5);
+  }
+  .curtain-left::after{right:-2px;}.curtain-right::after{left:-2px;}
+  #curtain-overlay.open .curtain-left{transform:translateX(-100%);}
+  #curtain-overlay.open .curtain-right{transform:translateX(100%);}
+  #curtain-overlay.gone{display:none;}
+  #curtain-title {
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1001;
+    text-align:center;color:var(--yellow);text-shadow:3px 3px 0 rgba(0,0,0,0.5);
+    pointer-events:none;transition:opacity 0.5s;
+  }
+  #curtain-title h1{font-family:'Russo One',sans-serif;font-size:clamp(32px,8vw,80px);line-height:1.1;letter-spacing:4px;}
+  #curtain-title p{font-family:'Special Elite',serif;font-size:clamp(14px,2.5vw,22px);margin-top:12px;color:rgba(255,230,100,0.8);font-style:italic;}
+  #curtain-title.hidden{opacity:0;}
+  #main-content{opacity:0;transition:opacity 0.8s ease 0.3s;}
+  #main-content.visible{opacity:1;}
+
+  /* DETECTIVE BOARD */
+  #detective-board {
+    background:
+      repeating-linear-gradient(0deg,rgba(0,0,0,0.04) 0px,transparent 1px,transparent 30px,rgba(0,0,0,0.04) 31px),
+      repeating-linear-gradient(90deg,rgba(0,0,0,0.03) 0px,transparent 1px,transparent 30px,rgba(0,0,0,0.03) 31px),
+      linear-gradient(135deg,#8B6914 0%,#A0791E 30%,#7A5C10 60%,#9B7218 100%);
+    padding:40px 20px 60px; position:relative; overflow:hidden; min-height:480px;
+  }
+  #detective-board::before {
+    content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+    background:radial-gradient(ellipse 3px 3px at 10px 10px,rgba(0,0,0,0.12) 0%,transparent 100%),
+               radial-gradient(ellipse 2px 2px at 25px 18px,rgba(255,255,255,0.06) 0%,transparent 100%);
+    background-size:35px 35px;pointer-events:none;
+  }
+  .board-title-banner{text-align:center;margin-bottom:30px;position:relative;}
+  .board-title-banner h1 {
+    font-family:'Russo One',sans-serif;font-size:clamp(18px,4vw,44px);color:#fff8e0;
+    text-shadow:3px 3px 0 rgba(0,0,0,0.5),0 0 20px rgba(241,196,15,0.3);letter-spacing:4px;
+    background:rgba(0,0,0,0.35);display:inline-block;padding:10px 30px;
+    border:2px solid rgba(241,196,15,0.4);position:relative;
+  }
+  .board-title-banner h1::before,.board-title-banner h1::after {
+    content:'';position:absolute;top:-12px;width:60px;height:22px;
+    background:var(--tape);border:1px solid rgba(200,180,0,0.3);
+  }
+  .board-title-banner h1::before{left:20px;transform:rotate(-3deg);}
+  .board-title-banner h1::after{right:20px;transform:rotate(2deg);}
+  .board-subtitle{font-family:'Special Elite',serif;font-size:14px;color:rgba(255,240,200,0.6);letter-spacing:3px;margin-top:8px;text-transform:uppercase;}
+
+  .evidence-grid {
+    display:flex;flex-wrap:wrap;justify-content:center;
+    max-width:900px;margin:0 auto;position:relative;min-height:280px;
+  }
+  #string-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+  .evidence-item{position:relative;z-index:2;margin:20px 24px;display:flex;flex-direction:column;align-items:center;}
+  .photo-placeholder {
+    width:108px;height:128px;background:white;border:3px solid #ddd;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    position:relative;box-shadow:4px 6px 12px rgba(0,0,0,0.4);transition:transform 0.2s;
+  }
+  .photo-placeholder:hover{transform:scale(1.08) rotate(2deg);}
+  .photo-placeholder::before{content:'📌';position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:24px;filter:drop-shadow(1px 2px 3px rgba(0,0,0,0.5));}
+  .photo-placeholder .ph-emoji{font-size:46px;line-height:1;}
+  .photo-placeholder .ph-name{font-family:'Special Elite',serif;font-size:13px;color:#333;margin-top:6px;text-align:center;letter-spacing:1px;}
+  .photo-placeholder .ph-aka{font-size:10px;color:#888;font-style:italic;text-align:center;}
+  .photo-placeholder .string-dot{position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:8px;height:8px;background:#c0392b;border-radius:50%;z-index:3;}
+  .evidence-label{background:#fff9e6;border:1px solid #bbb;padding:3px 10px;font-family:'Special Elite',serif;font-size:11px;color:#555;margin-top:6px;box-shadow:2px 2px 4px rgba(0,0,0,0.2);text-align:center;max-width:120px;}
+  .center-card {
+    background:rgba(192,57,43,0.85);color:white;padding:14px 18px;text-align:center;
+    border:2px solid rgba(255,255,255,0.3);box-shadow:0 0 25px rgba(192,57,43,0.6),4px 6px 12px rgba(0,0,0,0.4);
+    position:relative;z-index:2;margin:20px 24px;width:116px;
+  }
+  .center-card .cc-title{font-family:'Russo One',sans-serif;font-size:12px;letter-spacing:2px;}
+  .center-card .cc-emoji{font-size:34px;display:block;margin:6px 0;}
+  .center-card .cc-sub{font-size:11px;opacity:0.8;font-style:italic;}
+
+  /* HERO */
+  #hero {
+    padding:60px 20px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;
+    background:radial-gradient(ellipse at 20% 80%,rgba(192,57,43,0.08) 0%,transparent 50%),
+               radial-gradient(ellipse at 80% 20%,rgba(241,196,15,0.08) 0%,transparent 50%),var(--cream);
+    position:relative;overflow:hidden;
+  }
+  .cardboard-sign {
+    background:var(--cardboard);border:3px solid var(--ink);padding:24px 40px;
+    position:relative;transform:rotate(-1.5deg);box-shadow:6px 6px 0 rgba(0,0,0,0.3);
+    margin-bottom:30px;display:inline-block;
+  }
+  .cardboard-sign::before{content:'';position:absolute;top:6px;left:6px;right:-6px;bottom:-6px;border:2px solid rgba(0,0,0,0.15);z-index:-1;}
+  .cardboard-sign::after{content:'';position:absolute;top:-12px;left:50%;transform:translateX(-50%) rotate(2deg);width:80px;height:24px;background:var(--tape);border:1px solid rgba(200,180,0,0.3);}
+  .sign-title{font-family:'Russo One',sans-serif;font-size:clamp(28px,6vw,64px);color:var(--ink);line-height:1.1;letter-spacing:2px;text-transform:uppercase;}
+  .sign-title span{display:block;font-size:0.6em;letter-spacing:6px;color:var(--red);}
+  .hero-subtitle{font-family:'Special Elite',serif;font-size:clamp(14px,2.5vw,20px);color:#666;font-style:italic;margin-bottom:30px;}
+  .hero-subtitle::before{content:'— ';color:var(--red);}.hero-subtitle::after{content:' —';color:var(--red);}
+  .mission-text {
+    font-size:clamp(16px,3vw,22px);line-height:1.8;max-width:600px;background:white;
+    border:2px dashed var(--ink);padding:24px 32px;position:relative;
+    transform:rotate(0.5deg);box-shadow:4px 4px 0 rgba(0,0,0,0.15);text-align:left;margin:20px 0;
+  }
+  .mission-text::before{content:'🎯 ЦЕЛЬ ОРДЕНА';position:absolute;top:-14px;left:20px;background:var(--red);color:white;font-family:'Special Elite',serif;font-size:12px;padding:2px 12px;letter-spacing:2px;}
+  .big-btn {
+    display:inline-block;background:var(--red);color:white;font-family:'Russo One',sans-serif;
+    font-size:20px;padding:16px 40px;border:3px solid var(--ink);text-decoration:none;
+    box-shadow:6px 6px 0 var(--ink);transition:all 0.15s;cursor:pointer;letter-spacing:2px;margin-top:20px;
+  }
+  .big-btn:hover{transform:translate(-3px,-3px);box-shadow:9px 9px 0 var(--ink);background:#a93226;}
+  .big-btn:active{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--ink);}
+
+  /* LEGEND */
+  #legend {
+    padding:80px 20px;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0.03) 0px,rgba(0,0,0,0) 1px,rgba(0,0,0,0) 28px,rgba(0,0,0,0.03) 29px),#f9f4ec;
+    position:relative;
+  }
+  #legend::before{content:'📜 ЛЕГЕНДА';position:absolute;top:20px;left:50%;transform:translateX(-50%);background:var(--cardboard);border:2px solid var(--ink);padding:6px 24px;font-family:'Special Elite',serif;font-size:14px;letter-spacing:3px;box-shadow:3px 3px 0 rgba(0,0,0,0.2);}
+  .legend-container{max-width:700px;margin:0 auto;padding-top:30px;}
+  .legend-block{background:white;border:2px solid var(--ink);padding:30px;margin:20px 0;position:relative;box-shadow:5px 5px 0 rgba(0,0,0,0.2);}
+  .legend-block h2{font-family:'Russo One',sans-serif;font-size:clamp(22px,4vw,36px);color:var(--red);margin-bottom:16px;border-bottom:3px solid var(--cardboard);padding-bottom:10px;}
+  .legend-text{font-size:clamp(16px,2.5vw,20px);line-height:2;}
+  .legend-text .pause{display:block;text-align:center;font-size:2em;margin:10px 0;animation:pulse 2s infinite;}
+  .highlight-name{font-family:'Russo One',sans-serif;font-size:1.6em;color:var(--red);text-shadow:2px 2px 0 var(--cardboard);display:block;text-align:center;margin:10px 0;animation:wobble 3s infinite;}
+  .stamp{position:absolute;bottom:20px;right:20px;width:80px;height:80px;border:4px solid var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--red);font-family:'Russo One',sans-serif;font-size:9px;text-align:center;text-transform:uppercase;transform:rotate(-15deg);letter-spacing:1px;opacity:0.7;line-height:1.3;}
+  .psp-fact{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#eee;border-left:4px solid var(--yellow);padding:16px 20px;margin-top:16px;font-style:italic;position:relative;font-size:0.9em;}
+  .psp-fact::before{content:'🎮 ФАКТ';position:absolute;top:-12px;left:12px;background:var(--yellow);color:var(--ink);font-family:'Special Elite',serif;font-size:11px;padding:2px 10px;font-style:normal;letter-spacing:2px;}
+
+  /* ХАЧЕВСКИЕ ЦИТАТЫ */
+  #hach-quotes{padding:70px 20px;background:#1c1008;color:var(--cream);position:relative;overflow:hidden;}
+  #hach-quotes::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 0%,rgba(241,196,15,0.06) 0%,transparent 60%);pointer-events:none;}
+  .hach-quotes-title{font-family:'Russo One',sans-serif;font-size:clamp(20px,4vw,36px);color:var(--yellow);text-align:center;letter-spacing:3px;margin-bottom:8px;text-shadow:0 0 20px rgba(241,196,15,0.3);}
+  .hach-quotes-sub{text-align:center;font-family:'Special Elite',serif;font-size:13px;color:#666;letter-spacing:2px;margin-bottom:40px;font-style:italic;}
+  .hach-quote-card{background:rgba(255,255,255,0.04);border:1px solid rgba(241,196,15,0.2);border-left:4px solid var(--yellow);padding:20px 24px;max-width:600px;margin:16px auto;position:relative;font-size:clamp(16px,2.5vw,20px);line-height:1.7;transition:border-color 0.2s,background 0.2s;}
+  .hach-quote-card:hover{background:rgba(255,255,255,0.07);border-left-color:#fff;}
+  .hach-quote-card::before{content:'"';position:absolute;top:-10px;left:14px;font-size:60px;color:var(--yellow);opacity:0.2;font-family:Georgia,serif;line-height:1;}
+  .hach-quote-card em{display:block;font-size:0.75em;color:#666;margin-top:8px;}
+  .mystery-tag{display:inline-block;background:#333;color:#888;font-family:'Special Elite',serif;font-size:11px;padding:2px 10px;letter-spacing:2px;margin-top:6px;}
+
+  /* MEMBERS */
+  #members{padding:80px 20px;background:var(--cream);text-align:center;}
+  .section-header{font-family:'Russo One',sans-serif;font-size:clamp(24px,5vw,48px);color:var(--ink);margin-bottom:10px;display:inline-block;}
+  .section-header::after{content:'';display:block;height:4px;background:var(--red);margin-top:8px;transform:skewX(-5deg);}
+  .section-subheader{font-size:18px;color:#888;margin-bottom:50px;font-style:italic;}
+  .members-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:30px;max-width:800px;margin:0 auto;}
+  .member-card{background:white;border:2px solid var(--ink);padding:24px 16px;position:relative;box-shadow:5px 5px 0 rgba(0,0,0,0.2);transition:transform 0.2s,box-shadow 0.2s;transform:rotate(var(--rot,0deg));}
+  .member-card:hover{transform:rotate(0deg) translateY(-8px) !important;box-shadow:8px 12px 0 rgba(0,0,0,0.25);}
+  .member-card:nth-child(1){--rot:-1.5deg;}.member-card:nth-child(2){--rot:1deg;}.member-card:nth-child(3){--rot:-2deg;}
+  .member-avatar{font-size:64px;display:block;margin-bottom:12px;filter:drop-shadow(2px 4px 0 rgba(0,0,0,0.2));}
+  .member-name{font-family:'Russo One',sans-serif;font-size:18px;color:var(--ink);margin-bottom:4px;}
+  .member-aka{font-family:'Special Elite',serif;font-size:12px;color:#888;font-style:italic;margin-bottom:8px;}
+  .member-title{font-family:'Special Elite',serif;font-size:12px;color:var(--red);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;line-height:1.5;}
+  .member-stats{border-top:2px dashed var(--cardboard);padding-top:12px;font-size:13px;text-align:left;}
+  .stat-row{display:flex;justify-content:space-between;margin:4px 0;}
+  .stat-label{color:#888;}.stat-value{font-weight:bold;color:var(--ink);}
+  .level-bar{height:8px;background:var(--cardboard);border:1px solid var(--ink);margin-top:8px;position:relative;overflow:hidden;}
+  .level-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--yellow));animation:fillBar 2s ease-out both;animation-delay:0.5s;}
+  .rank-badge{position:absolute;top:-12px;right:16px;background:var(--yellow);border:2px solid var(--ink);padding:2px 10px;font-family:'Special Elite',serif;font-size:11px;font-weight:bold;box-shadow:2px 2px 0 rgba(0,0,0,0.2);}
+  .inactive-badge{position:absolute;top:-12px;left:16px;background:#666;color:#ccc;border:2px solid var(--ink);padding:2px 10px;font-family:'Special Elite',serif;font-size:10px;letter-spacing:1px;box-shadow:2px 2px 0 rgba(0,0,0,0.2);}
+
+  /* О НАС О ВЫСОЧАЙШИХ */
+  #owners{padding:80px 20px;background:linear-gradient(135deg,#1a0808,#2c1010,#1a0808);color:var(--cream);text-align:center;position:relative;overflow:hidden;}
+  #owners::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.01) 0px,transparent 2px,transparent 30px,rgba(255,255,255,0.01) 32px);pointer-events:none;}
+  .owners-title{font-family:'Russo One',sans-serif;font-size:clamp(20px,4vw,40px);color:var(--yellow);letter-spacing:3px;text-shadow:0 0 20px rgba(241,196,15,0.3);margin-bottom:8px;}
+  .owners-sub{font-family:'Special Elite',serif;font-size:14px;color:#666;margin-bottom:50px;letter-spacing:2px;font-style:italic;}
+  .owners-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:30px;max-width:700px;margin:0 auto;}
+  .owner-card{background:rgba(255,255,255,0.04);border:2px solid rgba(241,196,15,0.3);padding:30px 20px;position:relative;transition:transform 0.2s,box-shadow 0.2s;}
+  .owner-card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,0,0,0.5),0 0 20px rgba(241,196,15,0.1);border-color:rgba(241,196,15,0.6);}
+  .owner-crown{font-size:36px;display:block;margin-bottom:10px;}
+  .owner-name{font-family:'Russo One',sans-serif;font-size:20px;color:var(--yellow);margin-bottom:6px;}
+  .owner-aka{font-family:'Special Elite',serif;font-size:13px;color:#aaa;font-style:italic;margin-bottom:16px;letter-spacing:1px;}
+  .owner-info{text-align:left;}
+  .owner-info-row{font-size:14px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;gap:10px;}
+  .owner-info-row:last-child{border-bottom:none;}
+  .oi-key{color:#888;min-width:90px;flex-shrink:0;font-family:'Special Elite',serif;font-size:12px;letter-spacing:1px;}
+  .oi-val{color:#ddd;}
+  .owner-seal{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--red);color:white;font-family:'Special Elite',serif;font-size:10px;padding:3px 16px;letter-spacing:3px;border:1px solid rgba(255,255,255,0.2);}
+
+  /* ARTIFACTS */
+  #artifacts{padding:80px 20px;background:#1a1008;color:var(--cream);position:relative;overflow:hidden;}
+  #artifacts::before{content:'🏛️ МУЗЕЙ АРТЕФАКТОВ ШАЛОПАЙСТВА';display:block;text-align:center;font-family:'Russo One',sans-serif;font-size:clamp(13px,2.2vw,22px);color:var(--yellow);letter-spacing:3px;margin-bottom:50px;text-shadow:0 0 20px rgba(241,196,15,0.4);}
+  #artifacts::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.01) 0px,rgba(255,255,255,0) 2px,rgba(255,255,255,0) 10px,rgba(255,255,255,0.01) 12px);pointer-events:none;}
+  .artifacts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:22px;max-width:1100px;margin:0 auto;position:relative;z-index:1;}
+  .artifact-card{background:#2c1810;border:2px solid var(--cardboard);padding:20px;position:relative;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 4px 20px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.05);}
+  .artifact-card:hover{transform:translateY(-6px) rotate(1deg);box-shadow:0 12px 30px rgba(0,0,0,0.7),0 0 20px rgba(241,196,15,0.15);}
+  .artifact-number{position:absolute;top:8px;left:12px;font-family:'Special Elite',serif;font-size:10px;color:#666;letter-spacing:2px;}
+  .artifact-icon{font-size:48px;display:block;text-align:center;margin:8px 0 14px;filter:drop-shadow(0 0 12px rgba(241,196,15,0.3));animation:floatIcon 3s ease-in-out infinite;}
+  .artifact-name{font-family:'Russo One',sans-serif;font-size:14px;color:var(--yellow);text-align:center;margin-bottom:10px;letter-spacing:1px;}
+  .artifact-desc{font-family:'Special Elite',serif;font-size:13px;color:#bbb;text-align:center;line-height:1.7;font-style:italic;}
+  .artifact-tag{display:inline-block;background:var(--red);color:white;font-size:10px;padding:2px 8px;letter-spacing:2px;text-transform:uppercase;margin-top:10px;font-family:'Special Elite',serif;}
+  .artifact-tag-wrapper{text-align:center;}
+  .museum-label{position:absolute;bottom:8px;right:8px;background:var(--cardboard);color:var(--ink);font-family:'Special Elite',serif;font-size:9px;padding:2px 6px;letter-spacing:1px;opacity:0.6;}
+
+  /* ШАЛОСТИ */
+  #pranks{padding:80px 20px;background:#f9f4ec;position:relative;}
+  .pranks-header{text-align:center;margin-bottom:50px;}
+  .pranks-title{font-family:'Russo One',sans-serif;font-size:clamp(22px,4vw,40px);color:var(--ink);letter-spacing:2px;}
+  .pranks-title::after{content:'';display:block;height:4px;background:var(--red);margin:8px auto 0;width:200px;transform:skewX(-5deg);}
+  .pranks-sub{font-size:16px;color:#888;margin-top:10px;font-style:italic;}
+  .pranks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:28px;max-width:1100px;margin:0 auto;}
+  .prank-card{background:white;border:2px solid var(--ink);padding:20px;position:relative;box-shadow:5px 5px 0 rgba(0,0,0,0.15);transition:transform 0.2s,box-shadow 0.2s;transform:rotate(var(--rot,0deg));}
+  .prank-card:hover{transform:rotate(0deg) translateY(-5px) !important;box-shadow:8px 10px 0 rgba(0,0,0,0.2);}
+  .prank-card:nth-child(1){--rot:-1deg;}.prank-card:nth-child(2){--rot:1.5deg;}.prank-card:nth-child(3){--rot:-0.5deg;}
+  .prank-card:nth-child(4){--rot:2deg;}.prank-card:nth-child(5){--rot:-1.5deg;}.prank-card:nth-child(6){--rot:1deg;}
+  .prank-icon{font-size:40px;display:block;margin-bottom:10px;}
+  .prank-name{font-family:'Russo One',sans-serif;font-size:16px;color:var(--ink);margin-bottom:8px;border-bottom:2px dashed var(--cardboard);padding-bottom:8px;}
+  .prank-desc{font-size:15px;color:#555;line-height:1.7;}
+  .prank-desc .note{color:#999;font-style:italic;font-size:0.85em;display:block;margin-top:6px;}
+  .prank-tag{position:absolute;top:-12px;right:16px;background:var(--yellow);color:var(--ink);font-family:'Special Elite',serif;font-size:10px;padding:2px 10px;border:1px solid var(--ink);letter-spacing:1px;box-shadow:2px 2px 0 rgba(0,0,0,0.2);}
+  .prank-tag.red{background:var(--red);color:white;border-color:#900;}
+  .prank-tag.blue{background:var(--blue);color:white;border-color:#1a5f8a;}
+
+  /* ЦИТАТЫ */
+  #quotes{padding:80px 20px;background:var(--ink);color:var(--cream);position:relative;overflow:hidden;}
+  .quotes-bg-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Russo One',sans-serif;font-size:200px;opacity:0.02;white-space:nowrap;pointer-events:none;letter-spacing:20px;user-select:none;}
+  .quotes-header{text-align:center;margin-bottom:40px;position:relative;z-index:1;}
+  .quotes-header h2{font-family:'Russo One',sans-serif;font-size:clamp(22px,4vw,40px);color:var(--yellow);letter-spacing:3px;}
+  .quotes-header p{font-size:14px;color:#666;margin-top:6px;font-style:italic;letter-spacing:2px;}
+  .quotes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;max-width:1000px;margin:0 auto;position:relative;z-index:1;}
+  .quote-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);padding:20px;position:relative;transition:background 0.2s;}
+  .quote-card:hover{background:rgba(255,255,255,0.07);}
+  .quote-num{position:absolute;top:8px;right:12px;font-family:'Special Elite',serif;font-size:11px;color:#444;letter-spacing:2px;}
+  .quote-dialog{font-size:clamp(14px,2.5vw,17px);line-height:2;}
+  .q-line{display:block;padding:2px 0;}
+  .q-line.q-a{color:#ddd;}.q-line.q-b{color:var(--yellow);}
+  .q-line.q-dash::before{content:'— ';color:#666;}
+  .quote-card.lostmedia{border:1px dashed rgba(255,255,255,0.2);background:rgba(255,0,0,0.04);}
+  .lostmedia-label{display:block;text-align:center;font-family:'Special Elite',serif;font-size:20px;color:#c0392b;letter-spacing:4px;margin:10px 0;animation:glitch 0.4s infinite;}
+  .lostmedia-sub{text-align:center;font-size:13px;color:#555;font-style:italic;}
+  .quote-card.unofficial{border:1px solid rgba(255,255,0,0.1);background:rgba(255,255,0,0.02);grid-column:1/-1;}
+  .unofficial-stamp{display:inline-block;border:2px solid rgba(255,200,0,0.3);color:rgba(255,200,0,0.4);font-family:'Russo One',sans-serif;font-size:11px;padding:4px 12px;letter-spacing:3px;transform:rotate(-3deg);margin-bottom:8px;}
+
+  /* MANIFESTO */
+  #manifesto{padding:80px 20px;background:var(--red);color:white;text-align:center;position:relative;overflow:hidden;}
+  #manifesto::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:repeating-linear-gradient(45deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0) 5px,rgba(255,255,255,0) 25px,rgba(255,255,255,0.03) 30px);pointer-events:none;}
+  .manifesto-title{font-family:'Russo One',sans-serif;font-size:clamp(28px,6vw,60px);letter-spacing:4px;margin-bottom:40px;text-shadow:4px 4px 0 rgba(0,0,0,0.2);}
+  .manifesto-paper{background:rgba(255,255,255,0.95);color:var(--ink);max-width:600px;margin:0 auto;padding:40px;position:relative;transform:rotate(-0.5deg);box-shadow:8px 8px 0 rgba(0,0,0,0.2);}
+  .manifesto-paper::before{content:'';position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(1deg);width:120px;height:26px;background:var(--tape);border:1px solid rgba(200,180,0,0.4);}
+  .manifesto-list{list-style:none;text-align:left;}
+  .manifesto-list li{font-size:clamp(16px,2.5vw,20px);line-height:1.8;padding:8px 0;border-bottom:1px dashed var(--cardboard);position:relative;padding-left:36px;}
+  .manifesto-list li::before{content:attr(data-icon);position:absolute;left:0;font-size:20px;}
+  .manifesto-list li:last-child{border-bottom:none;}
+
+  /* SECRET */
+  #secret-section{padding:80px 20px;background:var(--cream);text-align:center;}
+  .warning-arrow{font-size:36px;display:block;animation:bounce 1s infinite;color:var(--red);margin-bottom:10px;}
+  .dont-btn{background:#333;color:var(--yellow);font-family:'Russo One',sans-serif;font-size:18px;padding:18px 40px;border:3px solid var(--yellow);box-shadow:6px 6px 0 rgba(0,0,0,0.3);cursor:pointer;letter-spacing:3px;text-transform:uppercase;transition:all 0.15s;}
+  .dont-btn:hover{background:#222;transform:scale(1.02);box-shadow:8px 8px 0 rgba(0,0,0,0.4);}
+  .dont-btn:active{transform:scale(0.98) translate(3px,3px);box-shadow:3px 3px 0 rgba(0,0,0,0.4);}
+  .dont-btn-label{font-size:11px;color:#999;display:block;margin-top:8px;font-family:'Special Elite',serif;font-style:italic;}
+  #secret-reveal{display:none;margin-top:40px;animation:secretAppear 0.5s ease both;}
+  #secret-reveal.shown{display:block;}
+  .secret-paper{background:#0a0a0a;color:#00ff41;font-family:'Special Elite',serif;max-width:500px;margin:0 auto;padding:30px;border:2px solid #00ff41;box-shadow:0 0 30px rgba(0,255,65,0.3);}
+  .eye-icon{font-size:80px;display:block;animation:eyePulse 2s ease-in-out infinite;margin:10px 0;}
+  .secret-text{font-size:18px;line-height:1.8;text-shadow:0 0 8px rgba(0,255,65,0.5);}
+  .glitch{animation:glitch 0.3s infinite;font-size:22px;letter-spacing:3px;}
+
+  /* FOOTER */
+  #footer{background:var(--ink);color:var(--cream);padding:60px 20px;text-align:center;}
+  .approval-section{border:2px solid var(--cardboard);display:inline-block;padding:24px 40px;margin-bottom:40px;position:relative;background:rgba(255,255,255,0.03);}
+  .approval-section::before{content:'ОДОБРЕНО';position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--cardboard);color:var(--ink);padding:2px 16px;font-family:'Russo One',sans-serif;font-size:13px;letter-spacing:3px;}
+  .approval-list{list-style:none;text-align:left;}
+  .approval-list li{padding:6px 0;font-family:'Special Elite',serif;font-size:16px;color:var(--cream);}
+  .approval-list li::before{content:'✓ ';color:var(--yellow);font-weight:bold;}
+  .footer-final{font-family:'Special Elite',serif;font-size:clamp(14px,2vw,17px);color:#aaa;font-style:italic;border-top:1px solid #333;padding-top:24px;max-width:600px;margin:0 auto;line-height:1.8;}
+  .footer-final .tiny{font-size:11px;color:#555;display:block;margin-top:12px;letter-spacing:1px;}
+
+  .divider{text-align:center;font-size:28px;margin:0;padding:20px;background:var(--cardboard);letter-spacing:8px;border-top:3px solid var(--ink);border-bottom:3px solid var(--ink);}
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity 0.6s ease,transform 0.6s ease;}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
+  @keyframes wobble{0%,100%{transform:rotate(-2deg);}50%{transform:rotate(2deg);}}
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+  @keyframes floatIcon{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  @keyframes fillBar{from{width:0%}to{width:var(--pct,98%)}}
+  @keyframes eyePulse{0%,100%{transform:scale(1);filter:drop-shadow(0 0 8px rgba(0,255,65,0.5));}50%{transform:scale(1.15);filter:drop-shadow(0 0 20px rgba(0,255,65,0.9));}}
+  @keyframes glitch{0%{text-shadow:2px 0 red,-2px 0 cyan;}33%{text-shadow:-2px 0 red,2px 0 cyan;}66%{text-shadow:2px 2px red,-2px -2px cyan;}100%{text-shadow:0 0 red;}}
+  @keyframes secretAppear{from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);}}
+
+  @media(max-width:600px){
+    .members-grid{grid-template-columns:1fr;}
+    .artifacts-grid{grid-template-columns:1fr 1fr;}
+    .photo-placeholder{width:80px;height:100px;}
+    .photo-placeholder .ph-emoji{font-size:32px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="curtain-overlay">
+  <div class="curtain-left"></div>
+  <div class="curtain-right"></div>
+</div>
+<div id="curtain-title">
+  <h1>ВЕЛИКИЕ<br>ШАЛОПАИ</h1>
+  <p>сейчас начнётся представление...</p>
+</div>
+
+<div id="main-content">
+
+<!-- 1. ДЕТЕКТИВНАЯ ДОСКА -->
+<header id="detective-board">
+  <div class="board-title-banner">
+    <h1>ОРДЕН ВЕЛИКИХ ШАЛОПАЕВ</h1>
+    <div class="board-subtitle">Досье · Высший разряд · Совершенно не секретно</div>
+  </div>
+  <div class="evidence-grid" id="evidence-grid">
+    <svg id="string-canvas"></svg>
+    <div class="evidence-item" id="ev-hach">
+      <div class="photo-placeholder" style="transform:rotate(-4deg)">
+        <div class="string-dot"></div>
+        <span class="ph-emoji">🎩</span>
+        <div class="ph-name">ХАЧ</div>
+        <div class="ph-aka">aka hrych*</div>
+      </div>
+      <div class="evidence-label">ОСНОВАТЕЛЬ<br>⚠ НЕАКТИВЕН</div>
+    </div>
+    <div class="evidence-item" id="ev-albania">
+      <div class="photo-placeholder" style="transform:rotate(2deg);border:2px dashed #999;">
+        <div class="string-dot"></div>
+        <span class="ph-emoji">🗺️</span>
+        <div class="ph-name">АЛБАНИЯ</div>
+        <div class="ph-aka">историческая Родина</div>
+      </div>
+      <div class="evidence-label">ШАЛОПАЙСКАЯ<br>ЗЕМЛЯ</div>
+    </div>
+    <div class="evidence-item" id="ev-center">
+      <div class="center-card" style="transform:rotate(1deg)">
+        <div class="cc-title">ОПЕРАЦИЯ</div>
+        <span class="cc-emoji">🇦🇱</span>
+        <div class="cc-title">АЛБАНИЯ</div>
+        <div class="cc-sub">статус: ждёт</div>
+      </div>
+    </div>
+    <div class="evidence-item" id="ev-ars">
+      <div class="photo-placeholder" style="transform:rotate(3deg)">
+        <div class="string-dot"></div>
+        <span class="ph-emoji">💻</span>
+        <div class="ph-name">АРС</div>
+        <div class="ph-aka">сайт & распространение</div>
+      </div>
+      <div class="evidence-label">ШАЛОПАЙ №1<br>✅ АКТИВЕН</div>
+    </div>
+    <div class="evidence-item" id="ev-max">
+      <div class="photo-placeholder" style="transform:rotate(-2deg)">
+        <div class="string-dot"></div>
+        <span class="ph-emoji">🎨</span>
+        <div class="ph-name">МАКС</div>
+        <div class="ph-aka">креативность & мемы</div>
+      </div>
+      <div class="evidence-label">ШАЛОПАЙ №2<br>✅ АКТИВЕН</div>
+    </div>
+  </div>
+  <p style="text-align:center;font-family:'Special Elite',serif;font-size:11px;color:rgba(255,240,200,0.35);margin-top:16px;letter-spacing:2px;">* — никнейм hrych в шалопайском кругу не признан</p>
+</header>
+
+<div class="divider">🔍 🧵 📌 🧵 🔍</div>
+
+<!-- 2. HERO -->
+<section id="hero">
+  <div class="cardboard-sign reveal">
+    <div class="sign-title"><span>Орден</span>Великое<br>Шалопайство</div>
+  </div>
+  <p class="hero-subtitle reveal">Мы пришли в этот мир, чтобы сделать его немного абсурднее</p>
+  <div class="mission-text reveal">
+    Мы — Великие Шалопаи Высшего Разряда.<br><br>
+    Наша цель:<br>
+    вносить контролируемый хаос,<br>
+    распространять мемы и абсурд,<br>
+    сохранять баланс шалопайства во вселенной,<br>
+    и однажды добраться до Албании — нашей исторической Родины.
+  </div>
+  <button class="big-btn" onclick="document.getElementById('legend').scrollIntoView({behavior:'smooth'})">[ Узнать больше ]</button>
+</section>
+
+<div class="divider">✦ ✦ ✦ ✦ ✦</div>
+
+<!-- 3. ЛЕГЕНДА -->
+<section id="legend">
+  <div class="legend-container">
+    <div class="legend-block reveal">
+      <h2>📜 Происхождение Ордена</h2>
+      <p class="legend-text">
+        По легенде, народ шалопайский пришёл с берегов Албании — исторической земли, откуда прибыли все истинные Шалопаи. Там, среди гор и абсурда, зародился дух шалопайства.<br><br>
+        Но однажды в обычной школе появился один человек.<br><br>
+        Он знал почти все игры. Он создавал странные анимации.<br>
+        Он изобрёл реактивное пиво и турбину из банки соли.<br><br>
+        Его имя было...
+        <span class="pause">⏳</span>
+        <span class="highlight-name">Х А Ч</span>
+      </p>
+      <div class="psp-fact">
+        У него было PSP с детского сада.<br>
+        Даже тогда — он уже познавал видеоигры.<br>
+        <em>Некоторые говорят, именно там и зародилось шалопайство.</em>
+      </div>
+      <div class="stamp">ОРДЕН<br>ПОДТВЕРЖДЕН<br>✓</div>
+    </div>
+    <div class="legend-block reveal">
+      <p class="legend-text">
+        Он называл себя<br>
+        <em>Шалопаем, который мечтает поехать в Албанию.</em><br><br>
+        Но судьба распорядилась иначе.<br><br>
+        Он основал Орден. Назначил первых Шалопаев Высшего Разряда. И исчез.
+      </p>
+    </div>
+    <div class="legend-block reveal" style="text-align:center;background:var(--cardboard);">
+      <p style="font-family:'Russo One',sans-serif;font-size:clamp(16px,3vw,24px);color:var(--ink);">
+        "Личность Хача по сей день<br>остаётся не установленной."
+      </p>
+      <p style="margin-top:12px;font-size:14px;color:#666;font-style:italic;">— архивы Ордена, том I</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider">🎭 🎭 🎭 🎭 🎭</div>
+
+<!-- 4. ЦИТАТЫ ХАЧА -->
+<section id="hach-quotes">
+  <div class="hach-quotes-title reveal">СЛОВА ОСНОВАТЕЛЯ</div>
+  <div class="hach-quotes-sub reveal">подтверждённые цитаты · засекреченных материалов больше нет</div>
+  <div class="hach-quote-card reveal">
+    "Я вижу.. я вижу... нихрена я не вижу."
+    <em>— Хач, в момент озарения</em>
+  </div>
+  <div class="hach-quote-card reveal">
+    — Рус, ты спишь?<br>— нет.
+    <em>— диалог, время неизвестно, контекст засекречен</em>
+  </div>
+  <div class="hach-quote-card reveal" style="border-left-color:#555;opacity:0.6;">
+    <span class="mystery-tag">??? — [LOSTMEDIA]</span><br>
+    <em style="color:#555;margin-top:8px;display:block;">Прочие высказывания Основателя не сохранились.<br>Личность малоизучена. Инфы мало.</em>
+  </div>
+</section>
+
+<div class="divider">🎩 ✦ 🎩 ✦ 🎩</div>
+
+<!-- 5. ВЕЛИКИЕ ШАЛОПАИ -->
+<section id="members">
+  <h2 class="section-header reveal">Великие Шалопаи</h2>
+  <p class="section-subheader reveal">Официальный реестр · 3 подтверждённых члена Ордена</p>
+  <div class="members-grid">
+    <div class="member-card reveal">
+      <div class="rank-badge">⭐ ОСНОВАТЕЛЬ</div>
+      <div class="inactive-badge">⚠ НЕАКТИВЕН</div>
+      <span class="member-avatar">🎩</span>
+      <div class="member-name">Хач</div>
+      <div class="member-aka">aka hrych (не признан)</div>
+      <div class="member-title">Великий Основатель<br>Орденоносец Шалопайства</div>
+      <div class="member-stats">
+        <div class="stat-row"><span class="stat-label">Ранг:</span><span class="stat-value">Высший Шалопай</span></div>
+        <div class="stat-row"><span class="stat-label">Статус:</span><span class="stat-value">🔴 Неактивен</span></div>
+        <div class="stat-row"><span class="stat-label">Шалопайство:</span><span class="stat-value">???%</span></div>
+        <div class="level-bar"><div class="level-fill" style="--pct:100%"></div></div>
+      </div>
+    </div>
+    <div class="member-card reveal">
+      <div class="rank-badge">🏅 ВЫСШИЙ</div>
+      <span class="member-avatar">💻</span>
+      <div class="member-name">Арс</div>
+      <div class="member-aka">Веб-мастер Ордена</div>
+      <div class="member-title">Ответственный за сайт<br>и распространение шалопайства</div>
+      <div class="member-stats">
+        <div class="stat-row"><span class="stat-label">Ранг:</span><span class="stat-value">Высший Разряд</span></div>
+        <div class="stat-row"><span class="stat-label">Статус:</span><span class="stat-value">🟢 Активен</span></div>
+        <div class="stat-row"><span class="stat-label">Шалопайство:</span><span class="stat-value">98%</span></div>
+        <div class="level-bar"><div class="level-fill" style="--pct:98%"></div></div>
+      </div>
+    </div>
+    <div class="member-card reveal">
+      <div class="rank-badge">🏅 ВЫСШИЙ</div>
+      <span class="member-avatar">🎨</span>
+      <div class="member-name">Макс</div>
+      <div class="member-aka">Главный Творец</div>
+      <div class="member-title">Министр креативности<br>и мемораспространения</div>
+      <div class="member-stats">
+        <div class="stat-row"><span class="stat-label">Ранг:</span><span class="stat-value">Высший Разряд</span></div>
+        <div class="stat-row"><span class="stat-label">Статус:</span><span class="stat-value">🟢 Активен</span></div>
+        <div class="stat-row"><span class="stat-label">Шалопайство:</span><span class="stat-value">97%</span></div>
+        <div class="level-bar"><div class="level-fill" style="--pct:97%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider">👑 ✦ 👑 ✦ 👑</div>
+
+<!-- 6. О НАС О ВЫСОЧАЙШИХ -->
+<section id="owners">
+  <div class="owners-title reveal">О НАС О ВЫСОЧАЙШИХ</div>
+  <div class="owners-sub reveal">Нынешние владельцы и хранители Ордена Шалопаев</div>
+  <div class="owners-grid">
+    <div class="owner-card reveal">
+      <div class="owner-seal">ВЛАДЕЛЕЦ I</div>
+      <span class="owner-crown">👔</span>
+      <div class="owner-name">Марселл Тёзкович</div>
+      <div class="owner-aka">Чебуреков · Носатый · Банкир</div>
+      <div class="owner-info">
+        <div class="owner-info-row"><span class="oi-key">ДОЛЖНОСТЬ</span><span class="oi-val">Совладелец Ордена</span></div>
+        <div class="owner-info-row"><span class="oi-key">ПРОЗВИЩЕ</span><span class="oi-val">Носатый & Банкир</span></div>
+        <div class="owner-info-row"><span class="oi-key">ФАМИЛИЯ</span><span class="oi-val">Чебуреков Тёзкович</span></div>
+        <div class="owner-info-row"><span class="oi-key">СТАТУС</span><span class="oi-val">🟢 При делах</span></div>
+      </div>
+    </div>
+    <div class="owner-card reveal">
+      <div class="owner-seal">ВЛАДЕЛЕЦ II</div>
+      <span class="owner-crown">🐰</span>
+      <div class="owner-name">Бакс Банни</div>
+      <div class="owner-aka">aka Бакс · Депозитор</div>
+      <div class="owner-info">
+        <div class="owner-info-row"><span class="oi-key">ДОЛЖНОСТЬ</span><span class="oi-val">Совладелец Ордена</span></div>
+        <div class="owner-info-row"><span class="oi-key">ДОСТИЖЕНИЕ</span><span class="oi-val">Депнул Русичку в казик*</span></div>
+        <div class="owner-info-row"><span class="oi-key">СТАТУС</span><span class="oi-val">🟢 При делах</span></div>
+        <div class="owner-info-row"><span class="oi-key">ПРИМЕЧАНИЕ</span><span class="oi-val" style="font-size:11px;color:#666;">* нет</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider">🧂 🍺 🍗 👁 🧂</div>
+
+<!-- 7. МУЗЕЙ АРТЕФАКТОВ -->
+<section id="artifacts">
+  <div class="artifacts-grid">
+    <div class="artifact-card reveal">
+      <span class="artifact-number">АРТЕФАКТ № 001</span>
+      <span class="artifact-icon">🧂</span>
+      <div class="artifact-name">ТУРБОСОЛЬ</div>
+      <p class="artifact-desc">Древний двигатель шалопайства.<br>Работает на соли и амбициях.</p>
+      <div class="artifact-tag-wrapper"><span class="artifact-tag">⚡ АКТИВЕН</span></div>
+      <div class="museum-label">ЭКСПОНАТ</div>
+    </div>
+    <div class="artifact-card reveal">
+      <span class="artifact-number">АРТЕФАКТ № 002</span>
+      <span class="artifact-icon">🍺</span>
+      <div class="artifact-name">РЕАКТИВНОЕ ПИВО</div>
+      <p class="artifact-desc">Если катнуть стакан по столу — он сам поедет дальше.<br><br>Механизм неизвестен.<br>Физики молчат.</p>
+      <div class="artifact-tag-wrapper"><span class="artifact-tag">🚫 ЗАСЕКРЕЧЕНО</span></div>
+      <div class="museum-label">ЭКСПОНАТ</div>
+    </div>
+    <div class="artifact-card reveal">
+      <span class="artifact-number">АРТЕФАКТ № 003</span>
+      <span class="artifact-icon">🍗</span>
+      <div class="artifact-name">КУРОЧКА ГНИЛЬ</div>
+      <p class="artifact-desc">Не путать с гриль.<br><br>Даже учёные не знают, что это такое.</p>
+      <div class="artifact-tag-wrapper"><span class="artifact-tag">❓ НЕИЗВЕСТНО</span></div>
+      <div class="museum-label">ЭКСПОНАТ</div>
+    </div>
+    <div class="artifact-card reveal">
+      <span class="artifact-number">АРТЕФАКТ № 004</span>
+      <span class="artifact-icon">👁</span>
+      <div class="artifact-name">ПРИСТАЛЬНОЕ ВНИМАНИЕ</div>
+      <p class="artifact-desc">Артефакт наблюдения.<br><br><em>"За вами кто-то наблюдает."</em></p>
+      <div class="artifact-tag-wrapper"><span class="artifact-tag">👁 НАБЛЮДАЕТ</span></div>
+      <div class="museum-label">ЭКСПОНАТ</div>
+    </div>
+    <div class="artifact-card reveal">
+      <span class="artifact-number">АРТЕФАКТ № 005</span>
+      <span class="artifact-icon">🪑📦🪣</span>
+      <div class="artifact-name">НАБОР «КРИБОРЧИК»</div>
+      <p class="artifact-desc">
+        <strong style="color:var(--yellow);">Кривульчик</strong> — стул с трудов.<br>
+        <strong style="color:var(--yellow);">Кривобочка</strong> — коробочка.<br>
+        <strong style="color:var(--yellow);">Кривочек</strong> — совочек.<br><br>
+        <em>Все кривые. Все наши. Все с любовью.</em>
+      </p>
+      <div class="artifact-tag-wrapper"><span class="artifact-tag">🏆 РУЧНАЯ РАБОТА</span></div>
+      <div class="museum-label">ЭКСПОНАТ</div>
+    </div>
+    <div class="artifact-card reveal">
+      <span class="artifact-number">АРТЕФАКТ № 006</span>
+      <span class="artifact-icon">🪙</span>
+      <div class="artifact-name">ГНУТЫЙ РУБЛЬ</div>
+      <p class="artifact-desc">Легендарный символ подорганизации «Гнутый Рубль».<br><br>На трудах — помогала.<br><em>Медвежьей услугой.</em></p>
+      <div class="artifact-tag-wrapper"><span class="artifact-tag">💎 ЛЕГЕНДА</span></div>
+      <div class="museum-label">ЭКСПОНАТ</div>
+    </div>
+    <div class="artifact-card reveal">
+      <span class="artifact-number">АРТЕФАКТ № 007</span>
+      <span class="artifact-icon">👟⏱️</span>
+      <div class="artifact-name">КРОВОСОК ВРЕМЕНИ</div>
+      <p class="artifact-desc">Кроссовок с хронометром в боку ботинка.<br><br>Садишься — и ты уже в другом времени.<br><br><em>Побочные эффекты не изучены.</em></p>
+      <div class="artifact-tag-wrapper"><span class="artifact-tag">⚠️ ОПАСЕН</span></div>
+      <div class="museum-label">ЭКСПОНАТ</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider">😂 ✦ 🎭 ✦ 😂</div>
+
+<!-- 8. СПИСОК ШАЛОСТЕЙ -->
+<section id="pranks">
+  <div class="pranks-header">
+    <h2 class="pranks-title reveal">СПИСОК НАШИХ ШАЛОСТЕЙ</h2>
+    <p class="pranks-sub reveal">задокументировано · частично официально · полностью шалопайски</p>
+  </div>
+  <div class="pranks-grid">
+    <div class="prank-card reveal">
+      <div class="prank-tag">👴 КЛАССИКА</div>
+      <span class="prank-icon">👴</span>
+      <div class="prank-name">Дед Арсений</div>
+      <p class="prank-desc">Легендарная операция с дедом Арсением. Подробности засекречены по соображениям безопасности.
+        <span class="note">— архивы не раскрывают деталей</span>
+      </p>
+    </div>
+    <div class="prank-card reveal">
+      <div class="prank-tag red">🧃 БИЗНЕС</div>
+      <span class="prank-icon">🧃☕</span>
+      <div class="prank-name">Барыга</div>
+      <p class="prank-desc">Торговля квасом и кофе. Официальная шалопайская коммерция. Рентабельность неизвестна, моральное удовлетворение — максимальное.</p>
+    </div>
+    <div class="prank-card reveal">
+      <div class="prank-tag blue">🍽️ КУЛЬТУРА</div>
+      <span class="prank-icon">🌯☕🍽️</span>
+      <div class="prank-name">Типичные Задние Парты</div>
+      <p class="prank-desc">Накрыли парту скатертью. Принесли шаурму и кофе.
+        <span class="note">Уровень: ресторан при школе.</span>
+      </p>
+    </div>
+    <div class="prank-card reveal">
+      <div class="prank-tag">🐭 ИВЕНТ</div>
+      <span class="prank-icon">🐭🌭</span>
+      <div class="prank-name">Мышка-Сосиска тунц тутунц</div>
+      <p class="prank-desc">Застали уникальный ивент: строгая учитель Кикимора (aka Косая) отчитывала учеников. Произошедшее было задокументировано.
+        <span class="note">— Кикимора в своей стихии</span>
+      </p>
+    </div>
+    <div class="prank-card reveal">
+      <div class="prank-tag red">🎰 КАЗИНО</div>
+      <span class="prank-icon">🎰💰</span>
+      <div class="prank-name">Шалопайское Казино</div>
+      <p class="prank-desc">Создание фейкового казино с фейковой валютой — шалобаксами. Бакс попытался задепонировать Русичку. Получилось (нет).
+        <span class="note">Центральный банк шалобаксов — Гнутый Рубль</span>
+      </p>
+    </div>
+    <div class="prank-card reveal">
+      <div class="prank-tag blue">✍️ WINDINGS</div>
+      <span class="prank-icon">✏️⭐</span>
+      <div class="prank-name">Учитель LOSTMEDIA</div>
+      <p class="prank-desc">Учитель, чьё имя было утрачено навсегда — на нашей, шалопайской волне. Писала замечания шрифтом Wingdings. За выход к доске выдавала стикеры.
+        <span class="note">Собственная песня: «Фасоль в консервной баночке»</span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="divider">💬 ✦ 💬 ✦ 💬</div>
+
+<!-- 9. ШАЛОПАЙСКИЕ ЦИТАТЫ -->
+<section id="quotes">
+  <div class="quotes-bg-text">""</div>
+  <div class="quotes-header">
+    <h2 class="reveal">ШАЛОПАЙСКИЕ ЦИТАТЫ</h2>
+    <p class="reveal">8 подтверждённых · 1 неофициальная · классика жанра</p>
+  </div>
+  <div class="quotes-grid">
+    <div class="quote-card reveal">
+      <div class="quote-num">№ 01</div>
+      <div class="quote-dialog">
+        <span class="q-line q-a q-dash">Что в первом?</span>
+        <span class="q-line q-b q-dash">Камилла Шамуратовна вроде</span>
+      </div>
+      <em style="font-size:11px;color:#444;display:block;margin-top:8px;font-style:italic;">* Камилла Шамуратовна — учитель по английскому</em>
+    </div>
+    <div class="quote-card reveal">
+      <div class="quote-num">№ 02</div>
+      <div class="quote-dialog">
+        <span class="q-line q-a q-dash">Какой урок по счёту?</span>
+        <span class="q-line q-b q-dash">Физика</span>
+      </div>
+    </div>
+    <div class="quote-card reveal">
+      <div class="quote-num">№ 03</div>
+      <div class="quote-dialog">
+        <span class="q-line q-a q-dash">Макс Макс ты где?</span>
+        <span class="q-line q-b q-dash">Я сзади идиот</span>
+      </div>
+    </div>
+    <div class="quote-card reveal">
+      <div class="quote-num">№ 04</div>
+      <div class="quote-dialog">
+        <span class="q-line q-a q-dash">Сколько времени?</span>
+        <span class="q-line q-b q-dash" style="color:#c0392b;font-size:1.2em;">ЕЕЕЕБОООЙ!</span>
+      </div>
+    </div>
+    <div class="quote-card reveal">
+      <div class="quote-num">№ 05</div>
+      <div class="quote-dialog">
+        <span class="q-line q-a q-dash">Запомни, запомни время!</span>
+        <span class="q-line q-b q-dash">ХХХХХу...</span>
+      </div>
+      <em style="font-size:11px;color:#444;display:block;margin-top:8px;font-style:italic;">* нечитаемая лексика</em>
+    </div>
+    <div class="quote-card reveal">
+      <div class="quote-num">№ 06</div>
+      <div class="quote-dialog">
+        <span class="q-line q-a q-dash">Ну что там, что там?</span>
+        <span class="q-line q-b q-dash" style="color:#8BC34A;font-size:1.1em;">Баклажан</span>
+      </div>
+    </div>
+    <div class="quote-card lostmedia reveal">
+      <div class="quote-num">№ 07</div>
+      <span class="lostmedia-label">[LOSTMEDIA]</span>
+      <div class="lostmedia-sub">Цитата утрачена.<br>Была смешная.</div>
+    </div>
+    <div class="quote-card lostmedia reveal">
+      <div class="quote-num">№ 08</div>
+      <span class="lostmedia-label">[LOSTMEDIA]</span>
+      <div class="lostmedia-sub">Цитата утрачена.<br>Была очень смешная.</div>
+    </div>
+    <div class="quote-card unofficial reveal">
+      <div class="unofficial-stamp">НЕОФИЦИАЛЬНО · НЕ ПРИЗНАНО</div>
+      <div class="quote-dialog" style="color:#aaa;">
+        <span class="q-line q-dash" style="color:#666;">О! Контурные карты</span>
+      </div>
+      <em style="font-size:11px;color:#444;display:block;margin-top:8px;">— непризнанная цитата, не входит в официальный реестр</em>
+    </div>
+  </div>
+</section>
+
+<div class="divider">✦ ✦ ✦ ✦ ✦</div>
+
+<!-- 10. МАНИФЕСТ -->
+<section id="manifesto">
+  <h2 class="manifesto-title reveal">МАНИФЕСТ<br>ШАЛОПАЕВ</h2>
+  <div class="manifesto-paper reveal">
+    <ul class="manifesto-list">
+      <li data-icon="📱">мемы делают мир лучше</li>
+      <li data-icon="🌀">абсурд — высшая форма юмора</li>
+      <li data-icon="🧂">турбосоль однажды спасёт человечество</li>
+      <li data-icon="🇦🇱">Албания — наша историческая Родина. И она ждёт.</li>
+      <li data-icon="🎭">каждый шалопай на своём месте</li>
+      <li data-icon="🎰">шалобакс — настоящая валюта</li>
+      <li data-icon="👁">мы наблюдаем. всегда.</li>
+    </ul>
+  </div>
+</section>
+
+<div class="divider">🎭 ✦ 🎭 ✦ 🎭</div>
+
+<!-- 11. СЕКРЕТ -->
+<section id="secret-section">
+  <h2 class="section-header reveal" style="margin-bottom:30px;">Архивы Ордена</h2>
+  <div class="reveal">
+    <span class="warning-arrow">👇</span>
+    <button class="dont-btn" onclick="activateSecret()">[ НЕ НАЖИМАТЬ ]</button>
+    <span class="dont-btn-label">серьёзно, не надо</span>
+  </div>
+  <div id="secret-reveal">
+    <div class="secret-paper">
+      <span class="eye-icon">👁</span>
+      <div class="secret-text">
+        <div class="glitch">ДОСТУП ПОЛУЧЕН</div><br>
+        Вы получили доступ к<br>
+        <strong>секретным архивам шалопаев.</strong><br><br>
+        Информация засекречена.<br>
+        Уровень допуска: ШАЛОПАЙ.<br><br>
+        <em>Но мы всё ещё наблюдаем.</em>
+      </div>
+      <span class="eye-icon" style="font-size:40px;">👁 👁 👁</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="approval-section reveal">
+    <ul class="approval-list">
+      <li>ХачTV</li>
+      <li>Великим Орденом Шалопаев</li>
+      <li>Турбиной Соли (сертификат № 001)</li>
+      <li>Курочкой Гниль (условно)</li>
+      <li>Гнутым Рублём (безусловно)</li>
+    </ul>
+  </div>
+  <div class="footer-final reveal">
+    Если вы учились в этой школе —<br>
+    значит вы тоже немного шалопай.
+    <span class="tiny">© ВЕЛИКИЙ ОРДЕН ШАЛОПАЕВ ВЫСШЕГО РАЗРЯДА · ANNO IGNORAMUS · ВСЕ ПРАВА ЗАРЕЗЕРВИРОВАНЫ АБСУРДОМ</span>
+  </div>
+</footer>
+
+</div>
+
+<script>
+  window.addEventListener('load', function() {
+    const overlay = document.getElementById('curtain-overlay');
+    const title = document.getElementById('curtain-title');
+    const main = document.getElementById('main-content');
+    setTimeout(() => { overlay.classList.add('open'); title.classList.add('hidden'); }, 1500);
+    setTimeout(() => { overlay.classList.add('gone'); main.classList.add('visible'); }, 3000);
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  function drawStrings() {
+    const grid = document.getElementById('evidence-grid');
+    const svg = document.getElementById('string-canvas');
+    if (!grid || !svg) return;
+    const w = grid.offsetWidth, h = grid.offsetHeight;
+    svg.setAttribute('width', w); svg.setAttribute('height', h);
+    svg.innerHTML = '';
+
+    const ids = ['ev-hach','ev-albania','ev-center','ev-ars','ev-max'];
+    const gridRect = grid.getBoundingClientRect();
+
+    function getTop(id) {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const ph = el.querySelector('.photo-placeholder,.center-card');
+      const r = (ph||el).getBoundingClientRect();
+      return { x: r.left - gridRect.left + r.width/2, y: r.top - gridRect.top + 6 };
+    }
+
+    const connections = [
+      ['ev-hach','ev-center','#c0392b'],
+      ['ev-ars','ev-center','#c0392b'],
+      ['ev-max','ev-center','#c0392b'],
+      ['ev-albania','ev-center','#2980b9'],
+      ['ev-hach','ev-albania','#f1c40f'],
+      ['ev-ars','ev-max','#888'],
+    ];
+
+    connections.forEach(([a,b,color]) => {
+      const p1 = getTop(a), p2 = getTop(b);
+      if (!p1||!p2) return;
+      const mx = (p1.x+p2.x)/2 + (Math.random()-0.5)*30;
+      const my = (p1.y+p2.y)/2 + Math.abs(p2.x-p1.x)*0.15 + 10;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M${p1.x},${p1.y} Q${mx},${my} ${p2.x},${p2.y}`);
+      path.setAttribute('stroke',color);
+      path.setAttribute('stroke-width','1.5');
+      path.setAttribute('fill','none');
+      path.setAttribute('opacity','0.65');
+      svg.appendChild(path);
+    });
+  }
+  setTimeout(drawStrings, 3300);
+  window.addEventListener('resize', drawStrings);
+
+  let secretActivated = false;
+  function activateSecret() {
+    if (secretActivated) return;
+    secretActivated = true;
+    document.getElementById('secret-reveal').classList.add('shown');
+    let shakes = 0;
+    const shake = setInterval(() => {
+      document.body.style.transform = `translateX(${(Math.random()-0.5)*8}px)`;
+      if (++shakes > 8) { clearInterval(shake); document.body.style.transform=''; }
+    }, 60);
+    for (let i=0;i<14;i++) setTimeout(spawnEye, i*130);
+  }
+  function spawnEye() {
+    const eye = document.createElement('div');
+    eye.textContent = '👁';
+    eye.style.cssText = `position:fixed;left:${Math.random()*100}vw;top:${Math.random()*100}vh;font-size:${20+Math.random()*40}px;pointer-events:none;z-index:9998;animation:eyeFloat 2.5s ease-out forwards;`;
+    document.body.appendChild(eye);
+    setTimeout(()=>eye.remove(),2500);
+  }
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `@keyframes eyeFloat{0%{transform:translateY(0) scale(0);opacity:1;}20%{transform:translateY(-20px) scale(1);opacity:1;}100%{transform:translateY(-120px) scale(0.5);opacity:0;}}`;
+  document.head.appendChild(styleEl);
+
+  const konami=[38,38,40,40,37,39,37,39,66,65]; let kp=0;
+  document.addEventListener('keydown',e=>{
+    if(e.keyCode===konami[kp]){kp++;if(kp===konami.length){kp=0;alert('🎉 ТЫ НАШЁЛ СЕКРЕТ ШАЛОПАЕВ!\n\nАлбания ждёт тебя.\n\nУровень шалопайства: МАКСИМУМ');}}else kp=0;
+  });
+</script>
+</body>
+</html>

@@ -1,18 +1,5 @@
 <!DOCTYPE html>
 <html lang="ru">
-<!-- Yandex.Metrika counter -->
-<script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=107200370', 'ym');
-
-    ym(107200370, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
-</script>
-<noscript><div><img src="https://mc.yandex.ru/watch/107200370" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-<!-- /Yandex.Metrika counter -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -794,10 +781,16 @@
 <!-- 11. СЕКРЕТ -->
 <section id="secret-section">
   <h2 class="section-header reveal" style="margin-bottom:30px;">Архивы Ордена</h2>
-  <div class="reveal">
-    <span class="warning-arrow">👇</span>
-    <button class="dont-btn" onclick="activateSecret()">[ НЕ НАЖИМАТЬ ]</button>
-    <span class="dont-btn-label">серьёзно, не надо</span>
+  <div class="reveal" style="text-align:center;">
+    <span class="warning-arrow" id="warning-arrow">👇</span>
+    <div id="dont-btn-wrapper" style="display:inline-block;position:relative;margin-bottom:4px;">
+      <button class="dont-btn" id="dont-btn">[ НЕ НАЖИМАТЬ ]</button>
+    </div>
+    <div id="resist-hint" style="font-family:'Special Elite',serif;font-size:16px;color:#999;margin-top:12px;min-height:24px;transition:color 0.3s;font-style:italic;">серьёзно, не надо</div>
+    <div id="progress-wrap" style="width:220px;height:10px;background:#ddd;border:2px solid var(--ink);margin:14px auto 0;display:none;overflow:hidden;">
+      <div id="progress-fill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--red),var(--yellow));transition:width 0.25s ease;"></div>
+    </div>
+    <div id="progress-label" style="font-family:'Special Elite',serif;font-size:11px;color:#aaa;margin-top:5px;letter-spacing:2px;display:none;">ДОСТУП: 0%</div>
   </div>
   <div id="secret-reveal">
     <div class="secret-paper">
@@ -894,6 +887,142 @@
   setTimeout(drawStrings, 3300);
   window.addEventListener('resize', drawStrings);
 
+  // ══════════════════════════════════════════════
+  // 🎯 КНОПКА С СОПРОТИВЛЕНИЕМ
+  // ══════════════════════════════════════════════
+  const dontBtn = document.getElementById('dont-btn');
+  const dontWrapper = document.getElementById('dont-btn-wrapper');
+  const resistHint = document.getElementById('resist-hint');
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressFill = document.getElementById('progress-fill');
+  const progressLabel = document.getElementById('progress-label');
+
+  const RESIST_TARGET = 8; // сколько кликов нужно
+  let resistClicks = 0;
+  let isEscaping = false;
+
+  const hintStages = [
+    'серьёзно, не надо',
+    'Эй, я же говорил…!',
+    'Ты точно уверен?',
+    'Система сопротивляется...',
+    'Может, всё-таки не стоит?',
+    'Ты почти там…',
+    'Ещё чуть-чуть... или нет.',
+    '⚠ Предупреждение проигнорировано',
+    'ДОСТУП РАЗРЕШЁН'
+  ];
+
+  function resistEscape() {
+    if (isEscaping) return;
+    isEscaping = true;
+    const maxOff = 60 + resistClicks * 8;
+    const dx = (Math.random() - 0.5) * maxOff;
+    const dy = (Math.random() - 0.5) * (maxOff * 0.5);
+    dontWrapper.style.transition = 'transform 0.18s cubic-bezier(0.36,0.07,0.19,0.97)';
+    dontWrapper.style.transform = `translate(${dx}px,${dy}px)`;
+    setTimeout(() => {
+      dontWrapper.style.transform = 'translate(0,0)';
+      isEscaping = false;
+    }, 380);
+  }
+
+  function spawnClickParticle(stage) {
+    const symbols = [
+      ['·','○','▪'],
+      ['✦','◆','▸'],
+      ['★','⚡','🧂'],
+      ['👁','◈','▣'],
+      ['🎭','🌀','⚠'],
+      ['🇦🇱','💥','✺'],
+      ['🎩','🌟','⚡'],
+      ['🔴','🔥','💀'],
+    ];
+    const pool = symbols[Math.min(stage, symbols.length-1)];
+    for (let i = 0; i < stage + 2; i++) {
+      const p = document.createElement('div');
+      p.textContent = pool[Math.floor(Math.random()*pool.length)];
+      const rect = dontWrapper.getBoundingClientRect();
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
+      p.style.cssText = `
+        position:fixed;
+        left:${cx}px; top:${cy}px;
+        font-size:${12+stage*3}px;
+        pointer-events:none; z-index:9993;
+        color:${stage<3?'#c0392b':stage<6?'#f1c40f':'#00ff41'};
+        animation:particleBurst${i%3} 0.7s ease-out forwards;
+        transform-origin:center;
+      `;
+      document.body.appendChild(p);
+      setTimeout(()=>p.remove(), 700);
+    }
+  }
+
+  // Частицы разлетаются в разные стороны
+  if (!document.getElementById('particle-styles')) {
+    const ps = document.createElement('style');
+    ps.id = 'particle-styles';
+    ps.textContent = `
+      @keyframes particleBurst0{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}100%{transform:translate(calc(-50% + ${-40}px),calc(-50% + ${-60}px)) scale(1.5);opacity:0;}}
+      @keyframes particleBurst1{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}100%{transform:translate(calc(-50% + ${50}px),calc(-50% + ${-40}px)) scale(1.5);opacity:0;}}
+      @keyframes particleBurst2{0%{transform:translate(-50%,-50%) scale(0);opacity:1;}100%{transform:translate(calc(-50% + ${10}px),calc(-50% + ${70}px)) scale(1.5);opacity:0;}}
+    `;
+    document.head.appendChild(ps);
+  }
+
+  dontBtn.addEventListener('click', () => {
+    resistClicks++;
+    const stage = Math.min(resistClicks - 1, hintStages.length - 1);
+
+    // Показываем прогресс после первого клика
+    if (resistClicks === 1) {
+      progressWrap.style.display = 'block';
+      progressLabel.style.display = 'block';
+    }
+
+    // Обновляем прогресс
+    const pct = Math.min(Math.round((resistClicks / RESIST_TARGET) * 100), 100);
+    progressFill.style.width = pct + '%';
+    progressLabel.textContent = `ДОСТУП: ${pct}%`;
+
+    // Обновляем подсказку
+    resistHint.textContent = hintStages[stage];
+    resistHint.style.color = stage < 3 ? '#999' : stage < 6 ? '#c0392b' : '#f1c40f';
+
+    // Частицы
+    spawnClickParticle(stage);
+
+    // Сопротивление (убегает до 6-го клика)
+    if (resistClicks < RESIST_TARGET - 1) {
+      resistEscape();
+    } else if (resistClicks < RESIST_TARGET) {
+      // Последний шанс — кнопка дрожит на месте
+      dontWrapper.style.animation = 'btnShake 0.4s ease';
+      setTimeout(()=>dontWrapper.style.animation='',400);
+    }
+
+    // Открываем архив!
+    if (resistClicks >= RESIST_TARGET) {
+      resistClicks = 0;
+      progressFill.style.width = '100%';
+      progressLabel.textContent = 'ДОСТУП: 100%';
+      setTimeout(activateSecret, 500);
+    }
+  });
+
+  // Убегание при наведении мыши (первые 5 кликов)
+  dontBtn.addEventListener('mouseover', () => {
+    if (resistClicks < 5 && !isEscaping) resistEscape();
+  });
+
+  if (!document.getElementById('btn-shake-style')) {
+    const bss = document.createElement('style');
+    bss.id = 'btn-shake-style';
+    bss.textContent = `@keyframes btnShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}`;
+    document.head.appendChild(bss);
+  }
+
   let secretActivated = false;
   function activateSecret() {
     if (secretActivated) return;
@@ -917,10 +1046,867 @@
   styleEl.textContent = `@keyframes eyeFloat{0%{transform:translateY(0) scale(0);opacity:1;}20%{transform:translateY(-20px) scale(1);opacity:1;}100%{transform:translateY(-120px) scale(0.5);opacity:0;}}`;
   document.head.appendChild(styleEl);
 
+  // ══════════════════════════════════════════════
+  // 🎮 KONAMI CODE → трансформация страницы
+  // ══════════════════════════════════════════════
   const konami=[38,38,40,40,37,39,37,39,66,65]; let kp=0;
+  let konamiActivated = false;
   document.addEventListener('keydown',e=>{
-    if(e.keyCode===konami[kp]){kp++;if(kp===konami.length){kp=0;alert('🎉 ТЫ НАШЁЛ СЕКРЕТ ШАЛОПАЕВ!\n\nАлбания ждёт тебя.\n\nУровень шалопайства: МАКСИМУМ');}}else kp=0;
+    if(e.keyCode===konami[kp]){
+      kp++;
+      if(kp===konami.length){
+        kp=0;
+        if (!konamiActivated) activateKonami();
+      }
+    } else kp=0;
   });
+
+  function activateKonami() {
+    konamiActivated = true;
+
+    // 1. Тост-приветствие
+    showToast('🎮 РЕЖИМ МАКСИМАЛЬНОГО ШАЛОПАЙСТВА', 3000);
+
+    // 2. Страница инвертируется на миг
+    document.body.style.transition = 'filter 0.3s';
+    document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+    setTimeout(()=>{
+      document.body.style.filter = 'invert(0)';
+      setTimeout(()=>{ document.body.style.filter=''; document.body.style.transition=''; }, 300);
+    }, 600);
+
+    // 3. Все заголовки временно меняются
+    const headers = document.querySelectorAll('.section-header, .manifesto-title, .owners-title, .hach-quotes-title');
+    const konamiTexts = ['ШАЛОПАЙ', 'АЛБАНИЯ', 'ТУРБОСОЛЬ', 'ХАЧТВ', 'КРИБОРЧИК'];
+    headers.forEach((h, i) => {
+      const orig = h.textContent;
+      setTimeout(()=>{
+        h.setAttribute('data-orig', orig);
+        h.textContent = konamiTexts[i % konamiTexts.length];
+        h.style.color = '#f1c40f';
+        h.style.textShadow = '0 0 20px #f1c40f';
+      }, 200 + i*100);
+      setTimeout(()=>{
+        h.textContent = h.getAttribute('data-orig');
+        h.style.color = '';
+        h.style.textShadow = '';
+      }, 3500 + i*100);
+    });
+
+    // 4. Флаги + шалопайский дождь
+    const rain = ['🧂','🇦🇱','🎩','👁','🎭','🍺','🌀','⭐'];
+    for (let i=0;i<30;i++){
+      setTimeout(()=>{
+        const el = document.createElement('div');
+        el.textContent = rain[Math.floor(Math.random()*rain.length)];
+        el.style.cssText = `
+          position:fixed;
+          left:${Math.random()*100}vw;
+          top:-60px;
+          font-size:${18+Math.random()*30}px;
+          pointer-events:none; z-index:9997;
+          animation:konamiRain ${1.5+Math.random()*2}s linear forwards;
+        `;
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(), 3500);
+      }, i*80);
+    }
+
+    // 5. Граница страницы пульсирует золотом
+    document.body.style.outline = '4px solid #f1c40f';
+    document.body.style.outlineOffset = '-4px';
+    setTimeout(()=>{ document.body.style.outline=''; document.body.style.outlineOffset=''; }, 4000);
+
+    // 6. Финальное сообщение
+    setTimeout(()=>{
+      showToast('🇦🇱 Уровень шалопайства: МАКСИМУМ. Албания ждёт.', 3000);
+    }, 3000);
+
+    if (!document.getElementById('konami-style')) {
+      const ks = document.createElement('style');
+      ks.id = 'konami-style';
+      ks.textContent = `@keyframes konamiRain{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(360deg);opacity:0;}}`;
+      document.head.appendChild(ks);
+    }
+  }
+
+  // ══════════════════════════════════════════════
+  // 👻 СКРЫТЫЕ ВСПЛЫВАЮЩИЕ ФРАГМЕНТЫ АРХИВА
+  // ══════════════════════════════════════════════
+  const archiveFragments = [
+    'псс... тут есть кое-что',
+    'документ #7: засекречен',
+    'Хач видел это.',
+    'LOSTMEDIA... или нет?',
+    'турбосоль: уровень ∞',
+    'Албания: сигнал принят',
+    '👁 ты не один',
+    'архив: фрагмент восстановлен',
+    'hrych? не признан.',
+    'шалобакс растёт',
+  ];
+
+  setInterval(() => {
+    if (Math.random() > 0.35) return;
+    const frag = document.createElement('div');
+    frag.textContent = archiveFragments[Math.floor(Math.random()*archiveFragments.length)];
+    frag.style.cssText = `
+      position:fixed;
+      left:${5 + Math.random()*85}vw;
+      top:${10 + Math.random()*80}vh;
+      color:rgba(241,196,15,0.55);
+      font-family:'Special Elite',serif;
+      font-size:${11+Math.random()*6}px;
+      pointer-events:none; z-index:9989;
+      letter-spacing:2px;
+      animation:fragAppear 3s ease both;
+    `;
+    document.body.appendChild(frag);
+    setTimeout(()=>frag.remove(), 3000);
+  }, 8000);
+
+  if (!document.getElementById('frag-style')) {
+    const fs = document.createElement('style');
+    fs.id = 'frag-style';
+    fs.textContent = `@keyframes fragAppear{0%{opacity:0;transform:translateY(6px);}20%{opacity:1;transform:translateY(0);}80%{opacity:1;}100%{opacity:0;transform:translateY(-6px);}}`;
+    document.head.appendChild(fs);
+  }
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 1: LOSTMEDIA → FOUND??
+  // ══════════════════════════════════════════════
+  setInterval(() => {
+    document.querySelectorAll('.lostmedia-label').forEach(el => {
+      if (Math.random() < 0.12) {
+        const orig = el.textContent;
+        el.textContent = 'FOUND??';
+        el.style.color = '#00ff41';
+        el.style.textShadow = '0 0 12px #00ff41';
+        setTimeout(() => {
+          el.textContent = orig;
+          el.style.color = '';
+          el.style.textShadow = '';
+        }, 420);
+      }
+    });
+  }, 1200);
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 2: УГОЛ — секретная зона
+  // ══════════════════════════════════════════════
+  let cornerClicks = 0;
+  const CORNER_TARGET = 9;
+
+  // Создаём невидимую зону в правом верхнем углу
+  const cornerZone = document.createElement('div');
+  cornerZone.id = 'corner-zone';
+  cornerZone.style.cssText = `
+    position:fixed; top:0; right:0;
+    width:90px; height:90px;
+    z-index:9990; cursor:default;
+  `;
+  document.body.appendChild(cornerZone);
+
+  // Мигающий квадратик-сигнал
+  const cornerDot = document.createElement('div');
+  cornerDot.id = 'corner-dot';
+  cornerDot.style.cssText = `
+    position:fixed; top:8px; right:8px;
+    width:10px; height:10px;
+    background:var(--yellow); opacity:0;
+    z-index:9991; pointer-events:none;
+    transition:opacity 0.15s;
+    box-shadow: 0 0 6px var(--yellow);
+  `;
+  document.body.appendChild(cornerDot);
+
+  // Всплывающее мини-сообщение
+  const cornerMsg = document.createElement('div');
+  cornerMsg.id = 'corner-msg';
+  cornerMsg.style.cssText = `
+    position:fixed; top:16px; right:16px;
+    background:#111; color:#f1c40f;
+    font-family:'Special Elite',serif; font-size:12px;
+    padding:6px 14px; border:1px solid #f1c40f;
+    z-index:9992; pointer-events:none;
+    opacity:0; transition:opacity 0.2s;
+    letter-spacing:2px; white-space:nowrap;
+  `;
+  document.body.appendChild(cornerMsg);
+
+  function flashCornerDot() {
+    cornerDot.style.opacity = '1';
+    setTimeout(() => cornerDot.style.opacity = '0', 220);
+  }
+  function showCornerMsg(text, duration=1200) {
+    cornerMsg.textContent = text;
+    cornerMsg.style.opacity = '1';
+    setTimeout(() => cornerMsg.style.opacity = '0', duration);
+  }
+
+  cornerZone.addEventListener('click', () => {
+    cornerClicks++;
+    flashCornerDot();
+
+    const msgs = [
+      '??? обнаружен', 'сигнал принят...', 'доступ: частичный',
+      'ещё...', 'режим шалопая...', 'ты близко', 'совсем рядом',
+      'ДОСТУП РАЗРЕШЁН'
+    ];
+    const idx = Math.min(cornerClicks - 1, msgs.length - 1);
+    showCornerMsg(msgs[idx], cornerClicks >= CORNER_TARGET ? 2000 : 900);
+
+    if (cornerClicks >= CORNER_TARGET) {
+      cornerClicks = 0;
+      setTimeout(openSecretMenu, 400);
+    }
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 3: СЕКРЕТНОЕ МЕНЮ
+  // ══════════════════════════════════════════════
+  const secretMenu = document.createElement('div');
+  secretMenu.id = 'secret-menu';
+  secretMenu.style.cssText = `
+    position:fixed; top:50%; left:50%;
+    transform:translate(-50%,-50%) scale(0.8);
+    background:#0d0d0d; border:2px solid #f1c40f;
+    color:#f1c40f; font-family:'Special Elite',serif;
+    padding:30px 40px; z-index:9995;
+    box-shadow:0 0 40px rgba(241,196,15,0.3), 0 0 80px rgba(0,0,0,0.8);
+    min-width:300px; text-align:center;
+    opacity:0; pointer-events:none;
+    transition:opacity 0.3s, transform 0.3s;
+  `;
+  secretMenu.innerHTML = `
+    <div style="font-size:11px;letter-spacing:4px;color:#666;margin-bottom:8px;">АРХИВ · УРОВЕНЬ ШАЛОПАЙ</div>
+    <div style="font-size:22px;letter-spacing:3px;margin-bottom:24px;text-shadow:0 0 12px #f1c40f;">⚠ СЕКРЕТНОЕ МЕНЮ ⚠</div>
+    <div class="smenu-btn" onclick="smenuShalopay()">🎭 Добавить шалопайства</div>
+    <div class="smenu-btn" onclick="smenuHach()">🎩 Призвать Хача</div>
+    <div class="smenu-btn" onclick="smenuAlbania()">🇦🇱 Активировать Албанию</div>
+    <div class="smenu-btn" onclick="smenuArchive()">👁 Открыть архив</div>
+    <div class="smenu-btn smenu-close" onclick="closeSecretMenu()">✕ закрыть</div>
+    <div style="font-size:10px;color:#333;margin-top:16px;letter-spacing:2px;">найдено: угол · ${new Date().toLocaleDateString('ru')}</div>
+  `;
+  document.body.appendChild(secretMenu);
+
+  // Стили кнопок меню
+  const smStyle = document.createElement('style');
+  smStyle.textContent = `
+    .smenu-btn {
+      background:rgba(241,196,15,0.08); border:1px solid rgba(241,196,15,0.3);
+      color:#f1c40f; padding:10px 20px; margin:6px 0; cursor:pointer;
+      font-family:'Special Elite',serif; font-size:15px; letter-spacing:1px;
+      transition:background 0.15s, border-color 0.15s;
+    }
+    .smenu-btn:hover { background:rgba(241,196,15,0.18); border-color:#f1c40f; }
+    .smenu-close { color:#c0392b; border-color:rgba(192,57,43,0.4); margin-top:14px; }
+    .smenu-close:hover { background:rgba(192,57,43,0.15); border-color:#c0392b; }
+  `;
+  document.head.appendChild(smStyle);
+
+  // Фон-оверлей для меню
+  const menuOverlay = document.createElement('div');
+  menuOverlay.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:9994;opacity:0;pointer-events:none;transition:opacity 0.3s;`;
+  menuOverlay.onclick = closeSecretMenu;
+  document.body.appendChild(menuOverlay);
+
+  function openSecretMenu() {
+    secretMenu.style.opacity = '1';
+    secretMenu.style.pointerEvents = 'all';
+    secretMenu.style.transform = 'translate(-50%,-50%) scale(1)';
+    menuOverlay.style.opacity = '1';
+    menuOverlay.style.pointerEvents = 'all';
+  }
+  function closeSecretMenu() {
+    secretMenu.style.opacity = '0';
+    secretMenu.style.pointerEvents = 'none';
+    secretMenu.style.transform = 'translate(-50%,-50%) scale(0.8)';
+    menuOverlay.style.opacity = '0';
+    menuOverlay.style.pointerEvents = 'none';
+  }
+
+  // — Действия меню —
+  function smenuShalopay() {
+    closeSecretMenu();
+    // Случайные эмодзи вылетают со всех сторон
+    const emojis = ['🧂','🎭','👁','🍺','🇦🇱','🎩','🌀','😂','💥'];
+    for (let i=0; i<20; i++) {
+      setTimeout(() => {
+        const el = document.createElement('div');
+        el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        el.style.cssText = `position:fixed;left:${Math.random()*100}vw;top:${Math.random()*100}vh;font-size:${24+Math.random()*32}px;pointer-events:none;z-index:9993;animation:eyeFloat 2s ease-out forwards;`;
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(),2000);
+      }, i*80);
+    }
+    // Фон на секунду меняет цвет
+    document.body.style.transition = 'background 0.3s';
+    document.body.style.background = '#1a0808';
+    setTimeout(()=>{ document.body.style.background=''; document.body.style.transition=''; }, 800);
+    showToast('🎭 ШАЛОПАЙСТВО АКТИВИРОВАНО');
+  }
+
+  function smenuHach() {
+    closeSecretMenu();
+    const msgs = [
+      'Ошибка: субъект не найден',
+      'Запрос отклонён. hrych не признан.',
+      'Сигнал отправлен... тишина.',
+      'Хач видит. Хач молчит.',
+      'PSP загружается...',
+      'Координаты: Албания. Время: неизвестно.',
+    ];
+    const msg = msgs[Math.floor(Math.random()*msgs.length)];
+    showToast('🎩 ' + msg, 2500);
+    // Лёгкое дрожание страницы
+    let sh = 0;
+    const si = setInterval(()=>{
+      document.body.style.transform = `rotate(${(Math.random()-0.5)*0.4}deg)`;
+      if(++sh>6){clearInterval(si);document.body.style.transform='';}
+    },80);
+  }
+
+  function smenuAlbania() {
+    closeSecretMenu();
+    showToast('🇦🇱 АЛБАНИЯ АКТИВИРОВАНА. ОНА ЖДЁТ.', 3000);
+    // Флаги летят снизу вверх
+    for (let i=0;i<10;i++) {
+      setTimeout(()=>{
+        const f = document.createElement('div');
+        f.textContent = '🇦🇱';
+        f.style.cssText = `position:fixed;left:${Math.random()*100}vw;bottom:-60px;font-size:${28+Math.random()*24}px;pointer-events:none;z-index:9993;animation:albaniaRise ${1.5+Math.random()}s ease-out forwards;`;
+        document.body.appendChild(f);
+        setTimeout(()=>f.remove(),3000);
+      }, i*150);
+    }
+    // Добавляем анимацию подъёма флагов
+    if (!document.getElementById('albania-style')) {
+      const as = document.createElement('style');
+      as.id = 'albania-style';
+      as.textContent = `@keyframes albaniaRise{0%{transform:translateY(0) scale(0.5);opacity:1;}100%{transform:translateY(-120vh) scale(1.2);opacity:0;}}`;
+      document.head.appendChild(as);
+    }
+  }
+
+  function smenuArchive() {
+    closeSecretMenu();
+    // Все .lostmedia-label временно показывают "FOUND??"
+    document.querySelectorAll('.lostmedia-label').forEach(el => {
+      el.textContent = 'FOUND??';
+      el.style.color = '#00ff41';
+      el.style.textShadow = '0 0 16px #00ff41';
+      el.style.animation = 'none';
+    });
+    showToast('👁 АРХИВ ВСКРЫТ. НО ДАННЫЕ ФРАГМЕНТИРОВАНЫ.', 3500);
+    // Через 4 секунды всё возвращается
+    setTimeout(() => {
+      document.querySelectorAll('.lostmedia-label').forEach(el => {
+        el.textContent = '[LOSTMEDIA]';
+        el.style.color = '';
+        el.style.textShadow = '';
+        el.style.animation = '';
+      });
+      showToast('...сигнал потерян.', 1500);
+    }, 4000);
+  }
+
+  // ══════════════════════════════════════════════
+  // 🌟 УТИЛИТА: всплывающие тосты
+  // ══════════════════════════════════════════════
+  function showToast(text, duration=2000) {
+    const t = document.createElement('div');
+    t.textContent = text;
+    t.style.cssText = `
+      position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+      background:#111; color:#f1c40f; border:1px solid #f1c40f;
+      font-family:'Special Elite',serif; font-size:15px; letter-spacing:2px;
+      padding:12px 28px; z-index:9996; white-space:nowrap;
+      box-shadow:0 0 20px rgba(241,196,15,0.3);
+      animation:toastIn 0.3s ease both;
+    `;
+    document.body.appendChild(t);
+    if (!document.getElementById('toast-style')) {
+      const ts = document.createElement('style');
+      ts.id = 'toast-style';
+      ts.textContent = `@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(20px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}`;
+      document.head.appendChild(ts);
+    }
+    setTimeout(()=>{
+      t.style.transition='opacity 0.3s';
+      t.style.opacity='0';
+      setTimeout(()=>t.remove(),300);
+    }, duration);
+  }
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 4: Тройной клик на логотип
+  // ══════════════════════════════════════════════
+  let logoClicks = 0, logoTimer;
+  document.querySelectorAll('.sign-title, .board-title-banner h1').forEach(el => {
+    el.addEventListener('click', () => {
+      logoClicks++;
+      clearTimeout(logoTimer);
+      logoTimer = setTimeout(() => logoClicks = 0, 600);
+      if (logoClicks >= 3) {
+        logoClicks = 0;
+        smenuHach();
+      }
+    });
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 5: Клик на 👁 в артефактах
+  // ══════════════════════════════════════════════
+  document.querySelectorAll('.artifact-icon').forEach(el => {
+    if (el.textContent.includes('👁')) {
+      el.style.cursor = 'pointer';
+      el.title = '???';
+      el.addEventListener('click', () => {
+        for (let i=0;i<8;i++) setTimeout(spawnEye, i*100);
+        showToast('👁 ОНО СМОТРИТ НА ТЕБЯ', 2000);
+      });
+    }
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 6: КАРТОЧКА ХАЧА — 5 кликов
+  // Открывает "засекреченное досье"
+  // ══════════════════════════════════════════════
+  let hachCardClicks = 0;
+  const hachCard = document.querySelector('#members .member-card');
+  if (hachCard) {
+    hachCard.style.cursor = 'pointer';
+    hachCard.addEventListener('click', () => {
+      hachCardClicks++;
+      if (hachCardClicks < 5) {
+        const sparks = ['?','??','...','!','🎩'];
+        const sp = document.createElement('div');
+        sp.textContent = sparks[hachCardClicks-1];
+        sp.style.cssText = `position:absolute;top:${10+Math.random()*60}%;left:${10+Math.random()*80}%;color:var(--yellow);font-family:'Russo One',sans-serif;font-size:16px;pointer-events:none;z-index:10;animation:fragAppear 1.2s ease forwards;`;
+        hachCard.style.position = 'relative';
+        hachCard.appendChild(sp);
+        setTimeout(()=>sp.remove(), 1200);
+      }
+      if (hachCardClicks === 5) {
+        hachCardClicks = 0;
+        // Показать досье
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9995;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:fragAppear 0.3s ease;`;
+        overlay.innerHTML = `
+          <div style="background:#0d0d0d;border:2px solid #f1c40f;padding:36px 40px;max-width:460px;width:90%;font-family:'Special Elite',serif;color:#f1c40f;position:relative;box-shadow:0 0 40px rgba(241,196,15,0.2);">
+            <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:#c0392b;color:white;padding:3px 20px;font-size:11px;letter-spacing:3px;">ДОСЬЕ · СОВЕРШЕННО СЕКРЕТНО</div>
+            <div style="font-size:11px;color:#555;letter-spacing:3px;margin-bottom:16px;">СУБЪЕКТ: ХАЧ / hrych (не признан)</div>
+            <div style="font-size:18px;margin-bottom:20px;line-height:1.9;color:#ccc;">
+              Настоящее имя: <span style="color:#c0392b;">██████</span><br>
+              Возраст: <span style="color:#c0392b;">██</span><br>
+              Местонахождение: <span style="color:#c0392b;">неизвестно</span><br>
+              Последний сигнал: <span style="color:#c0392b;">███████</span><br>
+              PSP: <span style="color:#f1c40f;">подтверждено с детского сада ✓</span><br>
+              Статус: <span style="color:#c0392b;">НЕАКТИВЕН</span><br>
+              Связь с Албанией: <span style="color:#f1c40f;">предположительно ДА</span>
+            </div>
+            <div style="font-size:11px;color:#444;border-top:1px solid #222;padding-top:12px;letter-spacing:2px;">Нажми куда угодно чтобы закрыть</div>
+          </div>
+        `;
+        overlay.addEventListener('click', ()=>overlay.remove());
+        document.body.appendChild(overlay);
+      }
+    });
+  }
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 7: КЛИКАБЕЛЬНАЯ ТУРБОСОЛЬ
+  // Каждый клик — соль летит вверх. 10 кликов — взрыв
+  // ══════════════════════════════════════════════
+  let saltClicks = 0;
+  document.querySelectorAll('.artifact-icon').forEach(el => {
+    if (el.textContent.includes('🧂')) {
+      el.style.cursor = 'pointer';
+      el.title = '⚡';
+      el.addEventListener('click', (e) => {
+        saltClicks++;
+        // Соль летит от курсора
+        for (let i=0;i<saltClicks+1;i++) {
+          const s = document.createElement('div');
+          s.textContent = '🧂';
+          s.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;font-size:${14+Math.random()*10}px;pointer-events:none;z-index:9997;animation:saltFly${i%4} ${0.6+Math.random()*0.5}s ease-out forwards;`;
+          document.body.appendChild(s);
+          setTimeout(()=>s.remove(), 1100);
+        }
+        if (saltClicks >= 10) {
+          saltClicks = 0;
+          showToast('💥 ТУРБОСОЛЬ АКТИВИРОВАНА. МИР СПАСЁН.', 3000);
+          // Большой взрыв соли
+          for (let i=0;i<30;i++) {
+            setTimeout(()=>{
+              const big = document.createElement('div');
+              big.textContent = '🧂';
+              big.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;font-size:${20+Math.random()*30}px;pointer-events:none;z-index:9997;animation:saltFly${i%4} ${0.8+Math.random()*1}s ease-out forwards;`;
+              document.body.appendChild(big);
+              setTimeout(()=>big.remove(), 1800);
+            }, i*40);
+          }
+        }
+      });
+    }
+  });
+
+  if (!document.getElementById('salt-style')) {
+    const ss = document.createElement('style');
+    ss.id = 'salt-style';
+    ss.textContent = `
+      @keyframes saltFly0{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1;}100%{transform:translate(calc(-50% + ${-60}px),calc(-50% + ${-120}px)) scale(1.2);opacity:0;}}
+      @keyframes saltFly1{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1;}100%{transform:translate(calc(-50% + ${70}px),calc(-50% + ${-100}px)) scale(1.2);opacity:0;}}
+      @keyframes saltFly2{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1;}100%{transform:translate(calc(-50% + ${-80}px),calc(-50% + ${-80}px)) scale(1.2);opacity:0;}}
+      @keyframes saltFly3{0%{transform:translate(-50%,-50%) scale(0.5);opacity:1;}100%{transform:translate(calc(-50% + ${40}px),calc(-50% + ${-130}px)) scale(1.2);opacity:0;}}
+    `;
+    document.head.appendChild(ss);
+  }
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 8: ДИВАЙДЕРЫ — клик меняет эмодзи
+  // ══════════════════════════════════════════════
+  const dividerSets = [
+    '🧂 🍺 🍗 👁 🧂',
+    '🇦🇱 ✦ 🇦🇱 ✦ 🇦🇱',
+    '🎩 🎩 🎩 🎩 🎩',
+    '💀 ✦ 💀 ✦ 💀',
+    '🌀 🌀 🌀 🌀 🌀',
+    '🧂 🍺 🍗 👁 🧂',
+  ];
+  document.querySelectorAll('.divider').forEach((div, i) => {
+    div.style.cursor = 'pointer';
+    let divIdx = 0;
+    div.addEventListener('click', () => {
+      divIdx = (divIdx + 1) % dividerSets.length;
+      div.style.transition = 'opacity 0.15s';
+      div.style.opacity = '0';
+      setTimeout(()=>{
+        div.textContent = dividerSets[divIdx];
+        div.style.opacity = '1';
+      }, 150);
+    });
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 9: ШАЛОПАЙСКИЙ СЧЁТЧИК
+  // Считает все клики по странице, на 100 — сюрприз
+  // ══════════════════════════════════════════════
+  let totalClicks = 0;
+  const clickMilestones = {
+    10:  '🎯 10 кликов. Ты явно что-то ищешь.',
+    25:  '🌀 25 кликов. Шалопайство в твоей крови.',
+    50:  '🧂 50 кликов. Турбосоль одобряет.',
+    69:  '👀 хм.',
+    100: '🏆 100 КЛИКОВ. ТЫ — ВЕЛИКИЙ ШАЛОПАЙ.',
+    150: '🇦🇱 150 кликов. Албания уже чувствует тебя.',
+    200: '👁 200 кликов. Хач наблюдает. Хач доволен.',
+    300: '💀 300 кликов. Ты в порядке?',
+    500: '🚀 500 КЛИКОВ. СТАТУС: ЛЕГЕНДА ШАЛОПАЙСТВА',
+  };
+  document.addEventListener('click', () => {
+    totalClicks++;
+    if (clickMilestones[totalClicks]) {
+      showToast(clickMilestones[totalClicks], totalClicks >= 100 ? 3500 : 2200);
+    }
+    // Счётчик в углу (появляется после 10 кликов)
+    if (totalClicks === 10) {
+      const counter = document.createElement('div');
+      counter.id = 'click-counter';
+      counter.style.cssText = `
+        position:fixed;bottom:12px;right:12px;
+        background:rgba(0,0,0,0.7);color:#666;
+        font-family:'Special Elite',serif;font-size:10px;
+        padding:4px 10px;z-index:9980;letter-spacing:2px;
+        border:1px solid #333;pointer-events:none;
+      `;
+      document.body.appendChild(counter);
+    }
+    const counter = document.getElementById('click-counter');
+    if (counter) counter.textContent = `КЛИКОВ: ${totalClicks}`;
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 10: КУРОЧКА ГНИЛЬ — клик = квохтание
+  // ══════════════════════════════════════════════
+  let chickenClicks = 0;
+  const chickenMsgs = [
+    '🍗 кво?', '🍗 квооо...', '🍗 КВО!',
+    '🍗 Курочка Гниль не раскрывает секретов.',
+    '🍗 Учёные по-прежнему не знают.',
+    '🍗 ...КВО!!!!!',
+    '🍗 ТЫ РАЗБУДИЛ КУРОЧКУ ГНИЛЬ',
+  ];
+  document.querySelectorAll('.artifact-icon').forEach(el => {
+    if (el.textContent.includes('🍗')) {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => {
+        const msg = chickenMsgs[Math.min(chickenClicks, chickenMsgs.length-1)];
+        showToast(msg, 1800);
+        chickenClicks++;
+        // На 6-м клике — курицы везде
+        if (chickenClicks === 7) {
+          chickenClicks = 0;
+          for (let i=0;i<18;i++){
+            setTimeout(()=>{
+              const c = document.createElement('div');
+              c.textContent = '🍗';
+              c.style.cssText = `position:fixed;left:${Math.random()*100}vw;top:${Math.random()*100}vh;font-size:${20+Math.random()*40}px;pointer-events:none;z-index:9993;animation:eyeFloat 3s ease-out forwards;`;
+              document.body.appendChild(c);
+              setTimeout(()=>c.remove(),3000);
+            }, i*120);
+          }
+        }
+        // Небольшое вращение иконки
+        el.style.animation = 'none';
+        el.style.transform = 'rotate(360deg) scale(1.3)';
+        el.style.transition = 'transform 0.4s ease';
+        setTimeout(()=>{ el.style.transform=''; el.style.transition=''; el.style.animation='floatIcon 3s ease-in-out infinite'; }, 400);
+      });
+    }
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 11: СКРОЛЛ вниз до конца = сюрприз
+  // ══════════════════════════════════════════════
+  let footerSurpriseDone = false;
+  window.addEventListener('scroll', () => {
+    if (footerSurpriseDone) return;
+    const scrolled = window.scrollY + window.innerHeight;
+    const total = document.body.scrollHeight;
+    if (scrolled >= total - 10) {
+      footerSurpriseDone = true;
+      setTimeout(()=>{
+        showToast('🎭 ТЫ ДОБРАЛСЯ ДО КОНЦА. ШАЛОПАЙСТВО ОДОБРЕНО.', 3500);
+        // Салют из шалопайских символов снизу
+        const fireworks = ['🧂','🇦🇱','🎩','👁','🎭','⭐','💛','🏆'];
+        for (let i=0;i<25;i++){
+          setTimeout(()=>{
+            const fw = document.createElement('div');
+            fw.textContent = fireworks[Math.floor(Math.random()*fireworks.length)];
+            fw.style.cssText = `position:fixed;left:${Math.random()*100}vw;bottom:-40px;font-size:${16+Math.random()*24}px;pointer-events:none;z-index:9993;animation:albaniaRise ${1.2+Math.random()*1.5}s ease-out forwards;`;
+            document.body.appendChild(fw);
+            setTimeout(()=>fw.remove(),3000);
+          }, i*100);
+        }
+      }, 500);
+    }
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 12: ДОЛГОЕ УДЕРЖАНИЕ на Манифесте
+  // Удерживай 2 секунды — манифест "оживает"
+  // ══════════════════════════════════════════════
+  let manifestHoldTimer;
+  let manifestDone = false;
+  const manifestPaper = document.querySelector('.manifesto-paper');
+  if (manifestPaper) {
+    const startHold = () => {
+      if (manifestDone) return;
+      manifestHoldTimer = setTimeout(()=>{
+        manifestDone = true;
+        showToast('📜 МАНИФЕСТ ОЖИЛ', 2500);
+        // Каждый пункт подсвечивается по очереди
+        const items = manifestPaper.querySelectorAll('li');
+        items.forEach((li, i) => {
+          setTimeout(()=>{
+            li.style.transition = 'color 0.3s, text-shadow 0.3s';
+            li.style.color = '#c0392b';
+            li.style.textShadow = '0 0 8px rgba(192,57,43,0.5)';
+            setTimeout(()=>{ li.style.color=''; li.style.textShadow=''; }, 800);
+          }, i*200);
+        });
+        // Бумага дрожит
+        manifestPaper.style.animation = 'btnShake 0.5s ease';
+        setTimeout(()=>manifestPaper.style.animation='', 500);
+        // Скрытая 8-я строка появляется ненадолго
+        const hiddenLi = document.createElement('li');
+        hiddenLi.setAttribute('data-icon','🤫');
+        hiddenLi.textContent = 'hrych всё равно шалопай';
+        hiddenLi.style.cssText = 'color:#c0392b;opacity:0;transition:opacity 0.5s;';
+        manifestPaper.querySelector('ul').appendChild(hiddenLi);
+        setTimeout(()=>hiddenLi.style.opacity='1', 100);
+        setTimeout(()=>{
+          hiddenLi.style.opacity='0';
+          setTimeout(()=>hiddenLi.remove(),500);
+          manifestDone = false;
+        }, 3000);
+      }, 2000);
+    };
+    manifestPaper.addEventListener('mousedown', startHold);
+    manifestPaper.addEventListener('touchstart', startHold);
+    manifestPaper.addEventListener('mouseup', ()=>clearTimeout(manifestHoldTimer));
+    manifestPaper.addEventListener('touchend', ()=>clearTimeout(manifestHoldTimer));
+    manifestPaper.addEventListener('mouseleave', ()=>clearTimeout(manifestHoldTimer));
+    // Подсказка при первом наведении
+    let manifestHinted = false;
+    manifestPaper.addEventListener('mouseenter', ()=>{
+      if (!manifestHinted){ manifestHinted=true; showToast('📜 удержи чтобы оживить...', 1500); }
+    });
+  }
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 13: ДЕТЕКТИВНАЯ ДОСКА — двойной клик
+  // по любой фотке = "установить связь"
+  // ══════════════════════════════════════════════
+  const boardConnections = {
+    'ev-hach':    'Субъект: ХАЧ. Связи: Албания, Орден. Статус: ПРОПАЛ.',
+    'ev-albania': 'Объект: АЛБАНИЯ. Историческая родина. Сигнал: активен.',
+    'ev-ars':     'Субъект: АРС. Задача: сайт. Лояльность: 100%. Подозрений нет.',
+    'ev-max':     'Субъект: МАКС. Задача: мемы. Уровень творчества: критический.',
+  };
+  Object.entries(boardConnections).forEach(([id, text]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.cursor = 'pointer';
+    let lastClick = 0;
+    el.addEventListener('click', () => {
+      const now = Date.now();
+      if (now - lastClick < 400) {
+        showToast('🔍 ' + text, 2800);
+        // Рамка вспыхивает
+        const ph = el.querySelector('.photo-placeholder');
+        if (ph) {
+          ph.style.transition = 'box-shadow 0.2s, border-color 0.2s';
+          ph.style.boxShadow = '0 0 20px #f1c40f';
+          ph.style.borderColor = '#f1c40f';
+          setTimeout(()=>{ ph.style.boxShadow=''; ph.style.borderColor=''; }, 1000);
+        }
+      }
+      lastClick = now;
+    });
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 14: ВВОД СЛОВА "ШАЛОПАЙ"
+  // Набери на клавиатуре — реакция сайта
+  // ══════════════════════════════════════════════
+  let typedBuffer = '';
+  const secretWords = {
+    'шалопай': ()=>{ showToast('🎭 СЛОВО СИЛЫ ПРОИЗНЕСЕНО', 2500); smenuShalopay(); },
+    'албания': ()=>{ smenuAlbania(); },
+    'турбосоль': ()=>{ showToast('🧂 ТУРБОСОЛЬ АКТИВИРОВАНА С КЛАВИАТУРЫ', 2500); for(let i=0;i<15;i++)setTimeout(()=>{const s=document.createElement('div');s.textContent='🧂';s.style.cssText=`position:fixed;left:${Math.random()*100}vw;top:${Math.random()*100}vh;font-size:${20+Math.random()*30}px;pointer-events:none;z-index:9997;animation:albaniaRise 2s ease-out forwards;`;document.body.appendChild(s);setTimeout(()=>s.remove(),2000);},i*80); },
+    'хач': ()=>{ smenuHach(); },
+    'hrych': ()=>{ showToast('❌ hrych не признан в шалопайском кругу', 2500); },
+    'криборчик': ()=>{ showToast('🪑 КРИБОРЧИК ОДОБРЕН. РОВНО НЕ БЫВАЕТ.', 2500); },
+    'гнутыйрубль': ()=>{ showToast('🪙 ГНУТЫЙ РУБЛЬ ПРИНЯТ. СДАЧИ НЕТ.', 2500); },
+  };
+  document.addEventListener('keypress', (e) => {
+    const ch = e.key.toLowerCase();
+    if (ch.length === 1) {
+      typedBuffer += ch;
+      if (typedBuffer.length > 20) typedBuffer = typedBuffer.slice(-20);
+      Object.keys(secretWords).forEach(word => {
+        if (typedBuffer.endsWith(word)) {
+          typedBuffer = '';
+          secretWords[word]();
+        }
+      });
+    }
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 15: ГНУТЫЙ РУБЛЬ — вибрирует при клике
+  // 7 кликов = открывает "казино"
+  // ══════════════════════════════════════════════
+  let rubleClicks = 0;
+  document.querySelectorAll('.artifact-icon').forEach(el => {
+    if (el.textContent.includes('🪙')) {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', () => {
+        rubleClicks++;
+        // Монета вращается и дрожит
+        el.style.animation = 'none';
+        el.style.display = 'inline-block';
+        el.style.transition = 'transform 0.3s';
+        el.style.transform = `rotate(${rubleClicks*37}deg) scale(${1+rubleClicks*0.05})`;
+        setTimeout(()=>{ el.style.transform=''; el.style.animation='floatIcon 3s ease-in-out infinite'; }, 300);
+
+        if (rubleClicks < 7) {
+          showToast(['🪙 дзынь','🪙 дзынь дзынь','🪙 гнётся...','🪙 ещё гнётся...','🪙 совсем гнутый','🪙 максимальная гнутость',''][rubleClicks-1]||'', 1200);
+        }
+        if (rubleClicks >= 7) {
+          rubleClicks = 0;
+          // "Казино" открывается
+          const casino = document.createElement('div');
+          casino.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:9995;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:fragAppear 0.3s ease;`;
+          const symbols = ['🧂','🍺','🍗','👁','🎩','🇦🇱','🌀','🎭'];
+          const getSlot = ()=>symbols[Math.floor(Math.random()*symbols.length)];
+          casino.innerHTML = `
+            <div style="background:#0d0d0d;border:2px solid #f1c40f;padding:36px 50px;text-align:center;font-family:'Special Elite',serif;color:#f1c40f;max-width:400px;width:90%;box-shadow:0 0 60px rgba(241,196,15,0.2);">
+              <div style="font-size:13px;letter-spacing:4px;color:#666;margin-bottom:6px;">ШАЛОПАЙСКОЕ КАЗИНО</div>
+              <div style="font-size:11px;color:#444;margin-bottom:20px;letter-spacing:2px;">валюта: шалобакс</div>
+              <div id="casino-slots" style="font-size:52px;letter-spacing:16px;margin:16px 0;">${getSlot()} ${getSlot()} ${getSlot()}</div>
+              <div id="casino-result" style="font-size:16px;margin:14px 0;min-height:24px;color:#ccc;"></div>
+              <div onclick="spinCasino()" style="background:rgba(241,196,15,0.1);border:1px solid #f1c40f;color:#f1c40f;padding:10px 30px;cursor:pointer;font-size:16px;letter-spacing:2px;margin-top:8px;display:inline-block;">[ КРУТИТЬ ]</div>
+              <div style="margin-top:20px;font-size:11px;color:#333;letter-spacing:1px;">нажми мимо чтобы закрыть</div>
+            </div>
+          `;
+          casino.addEventListener('click', (e)=>{ if(e.target===casino) casino.remove(); });
+          document.body.appendChild(casino);
+        }
+      });
+    }
+  });
+
+  window.spinCasino = function() {
+    const slots = document.getElementById('casino-slots');
+    const result = document.getElementById('casino-result');
+    if (!slots || !result) return;
+    const symbols = ['🧂','🍺','🍗','👁','🎩','🇦🇱','🌀','🎭'];
+    let spins = 0;
+    const spin = setInterval(()=>{
+      const a=symbols[Math.floor(Math.random()*symbols.length)];
+      const b=symbols[Math.floor(Math.random()*symbols.length)];
+      const c=symbols[Math.floor(Math.random()*symbols.length)];
+      slots.textContent = `${a} ${b} ${c}`;
+      spins++;
+      if (spins >= 12) {
+        clearInterval(spin);
+        if (a===b && b===c) {
+          result.textContent = '🏆 ДЖЕКПОТ! +1000 шалобаксов';
+          result.style.color = '#f1c40f';
+          showToast('🏆 ДЖЕКПОТ В ШАЛОПАЙСКОМ КАЗИНО!', 3000);
+        } else if (a===b || b===c || a===c) {
+          result.textContent = '✨ Пара! +50 шалобаксов';
+          result.style.color = '#ccc';
+        } else {
+          const loses = ['Депнул (нет)','шалобаксы испарились','Гнутый Рубль не помог','попробуй ещё раз'];
+          result.textContent = '😔 ' + loses[Math.floor(Math.random()*loses.length)];
+          result.style.color = '#c0392b';
+        }
+      }
+    }, 80);
+  };
+
+  // ══════════════════════════════════════════════
+  // 🌟 ПАСХАЛКА 16: КУРСОР-СЛЕД при быстром движении
+  // ══════════════════════════════════════════════
+  let lastMouseX = 0, lastMouseY = 0, trailActive = false;
+  // Активируется после 50 кликов
+  document.addEventListener('mousemove', (e) => {
+    if (!trailActive) return;
+    const speed = Math.hypot(e.clientX-lastMouseX, e.clientY-lastMouseY);
+    lastMouseX=e.clientX; lastMouseY=e.clientY;
+    if (speed > 30 && Math.random() < 0.4) {
+      const trail = document.createElement('div');
+      trail.textContent = ['✦','·','○','◆','·'][Math.floor(Math.random()*5)];
+      trail.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;font-size:10px;color:rgba(241,196,15,0.5);pointer-events:none;z-index:9980;animation:fragAppear 0.8s ease forwards;transform:translate(-50%,-50%);`;
+      document.body.appendChild(trail);
+      setTimeout(()=>trail.remove(),800);
+    }
+  });
+  // Разблокировать след при 50 кликах
+  const origClickHandler = document.onclick;
+  let trailUnlockWatcher = setInterval(()=>{
+    if (totalClicks >= 50) {
+      trailActive = true;
+      showToast('✦ след шалопая активирован', 2000);
+      clearInterval(trailUnlockWatcher);
+    }
+  }, 1000);
+
 </script>
 </body>
 </html>

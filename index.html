@@ -317,11 +317,146 @@
   @keyframes glitch{0%{text-shadow:2px 0 red,-2px 0 cyan;}33%{text-shadow:-2px 0 red,2px 0 cyan;}66%{text-shadow:2px 2px red,-2px -2px cyan;}100%{text-shadow:0 0 red;}}
   @keyframes secretAppear{from{opacity:0;transform:scale(0.8);}to{opacity:1;transform:scale(1);}}
 
+
+  /* ── PHOTO PLACEHOLDERS ── */
+  .member-photo-wrap { display:flex; justify-content:center; margin:8px 0 12px; }
+  .member-photo-ph {
+    width:90px; height:90px;
+    border:2px dashed #aaa;
+    background:rgba(0,0,0,0.04);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    position:relative; cursor:default;
+  }
+  .member-photo-ph .ph-big { font-size:38px; line-height:1; }
+  .member-photo-ph .ph-label {
+    font-size:9px; color:#888; letter-spacing:1px;
+    font-family:'Special Elite',serif; margin-top:4px; text-align:center;
+  }
+  .owner-photo-ph {
+    width:80px; height:80px;
+    border:2px dashed #888;
+    background:rgba(0,0,0,0.04);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    margin:8px auto 12px;
+  }
+  .owner-photo-ph .ph-big { font-size:34px; line-height:1; }
+  .owner-photo-ph .ph-label { font-size:9px; color:#777; letter-spacing:1px; font-family:'Special Elite',serif; margin-top:3px; }
+
+  /* ── ELT / CRT effect ── */
+  @keyframes crtScan {
+    0%   { background-position: 0 0; }
+    100% { background-position: 0 100%; }
+  }
+  .crt-effect {
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    pointer-events:none; z-index:9997;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 3px,
+      rgba(0,255,65,0.04) 3px,
+      rgba(0,255,65,0.04) 4px
+    );
+    animation: crtScan 4s linear infinite;
+    mix-blend-mode: screen;
+  }
+  .bw-filter #main-content { filter: grayscale(1) contrast(1.1); }
+
   @media(max-width:600px){
     .members-grid{grid-template-columns:1fr;}
     .artifacts-grid{grid-template-columns:1fr 1fr;}
     .photo-placeholder{width:80px;height:100px;}
     .photo-placeholder .ph-emoji{font-size:32px;}
+  }
+
+  /* ── ПАНЕЛЬ ДОСТИЖЕНИЙ ── */
+  #achievements-panel {
+    position: fixed;
+    bottom: 20px; left: 20px;
+    z-index: 9985;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .achievement-popup {
+    background: #111;
+    border: 1px solid var(--yellow);
+    color: var(--cream);
+    font-family: 'Special Elite', serif;
+    font-size: 13px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 0 16px rgba(241,196,15,0.2);
+    animation: achieveIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    max-width: 280px;
+    pointer-events: none;
+  }
+  .achievement-popup.out {
+    animation: achieveOut 0.35s ease forwards;
+  }
+  .achieve-icon { font-size: 22px; flex-shrink: 0; }
+  .achieve-text { line-height: 1.4; }
+  .achieve-title { color: var(--yellow); font-size: 11px; letter-spacing: 2px; display: block; }
+  .achieve-desc { font-size: 13px; color: #ccc; }
+
+  @keyframes achieveIn {
+    from { transform: translateX(-120%); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+  }
+  @keyframes achieveOut {
+    from { transform: translateX(0);     opacity: 1; }
+    to   { transform: translateX(-120%); opacity: 0; }
+  }
+
+  /* ── ПОДСКАЗКА-НАМЁК снизу по центру ── */
+  #hint-nudge {
+    position: fixed;
+    bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: rgba(241,196,15,0.7);
+    font-family: 'Special Elite', serif;
+    font-size: 12px;
+    padding: 7px 20px;
+    letter-spacing: 2px;
+    z-index: 9984;
+    pointer-events: none;
+    opacity: 0;
+    border: 1px solid rgba(241,196,15,0.2);
+    transition: opacity 0.5s;
+    white-space: nowrap;
+  }
+
+  /* ── АРХИВНЫЙ РЕЖИМ — глобальные стили ── */
+  body.archive-mode {
+    --cream: #0f0e0c;
+    --cardboard: #3a2e1a;
+    --ink: #d4c9a8;
+  }
+  body.archive-mode #main-content {
+    filter: sepia(0.3) brightness(0.85);
+  }
+  body.archive-mode .archive-reveal {
+    opacity: 1 !important;
+    color: #00ff41 !important;
+    text-shadow: 0 0 8px rgba(0,255,65,0.4) !important;
+  }
+  .archive-stamp {
+    display: inline-block;
+    border: 2px solid #00ff41;
+    color: #00ff41;
+    font-family: 'Russo One', sans-serif;
+    font-size: 10px;
+    padding: 2px 10px;
+    letter-spacing: 3px;
+    transform: rotate(-3deg);
+    margin-left: 8px;
+    vertical-align: middle;
+    opacity: 0.8;
   }
 </style>
 </head>
@@ -336,13 +471,19 @@
   <p>сейчас начнётся представление...</p>
 </div>
 
+<!-- ПАНЕЛЬ ДОСТИЖЕНИЙ -->
+<div id="achievements-panel"></div>
+
+<!-- НАМЁК-ПОДСКАЗКА -->
+<div id="hint-nudge"></div>
+
 <div id="main-content">
 
 <!-- 1. ДЕТЕКТИВНАЯ ДОСКА -->
 <header id="detective-board">
   <div class="board-title-banner">
     <h1>ОРДЕН ВЕЛИКИХ ШАЛОПАЕВ</h1>
-    <div class="board-subtitle">Досье · Высший разряд · Совершенно не секретно</div>
+    <div class="board-subtitle" id="board-subtitle">Досье · Высший разряд · Совершенно не секретно</div>
   </div>
   <div class="evidence-grid" id="evidence-grid">
     <svg id="string-canvas"></svg>
@@ -420,7 +561,7 @@
   <div class="legend-container">
     <div class="legend-block reveal">
       <h2>📜 Происхождение Ордена</h2>
-      <p class="legend-text">
+      <p class="legend-text" id="legend-text-1">
         По легенде, народ шалопайский пришёл с берегов Албании — исторической земли, откуда прибыли все истинные Шалопаи. Там, среди гор и абсурда, зародился дух шалопайства.<br><br>
         Но однажды в обычной школе появился один человек.<br><br>
         Он знал почти все игры. Он создавал странные анимации.<br>
@@ -436,19 +577,19 @@
       </div>
       <div class="stamp">ОРДЕН<br>ПОДТВЕРЖДЕН<br>✓</div>
     </div>
-    <div class="legend-block reveal">
-      <p class="legend-text">
+    <div class="legend-block reveal" id="legend-block-2">
+      <p class="legend-text" id="legend-text-2">
         Он называл себя<br>
         <em>Шалопаем, который мечтает поехать в Албанию.</em><br><br>
         Но судьба распорядилась иначе.<br><br>
         Он основал Орден. Назначил первых Шалопаев Высшего Разряда. И исчез.
       </p>
     </div>
-    <div class="legend-block reveal" style="text-align:center;background:var(--cardboard);">
-      <p style="font-family:'Russo One',sans-serif;font-size:clamp(16px,3vw,24px);color:var(--ink);">
+    <div class="legend-block reveal" style="text-align:center;background:var(--cardboard);" id="legend-block-3">
+      <p style="font-family:'Russo One',sans-serif;font-size:clamp(16px,3vw,24px);color:var(--ink);" id="legend-quote">
         "Личность Хача по сей день<br>остаётся не установленной."
       </p>
-      <p style="margin-top:12px;font-size:14px;color:#666;font-style:italic;">— архивы Ордена, том I</p>
+      <p style="margin-top:12px;font-size:14px;color:#666;font-style:italic;" id="legend-quote-src">— архивы Ордена, том I</p>
     </div>
   </div>
 </section>
@@ -458,7 +599,7 @@
 <!-- 4. ЦИТАТЫ ХАЧА -->
 <section id="hach-quotes">
   <div class="hach-quotes-title reveal">СЛОВА ОСНОВАТЕЛЯ</div>
-  <div class="hach-quotes-sub reveal">подтверждённые цитаты · засекреченных материалов больше нет</div>
+  <div class="hach-quotes-sub reveal" id="hach-quotes-sub">подтверждённые цитаты · засекреченных материалов больше нет</div>
   <div class="hach-quote-card reveal">
     "Я вижу.. я вижу... нихрена я не вижу."
     <em>— Хач, в момент озарения</em>
@@ -478,15 +619,15 @@
 <!-- 5. ВЕЛИКИЕ ШАЛОПАИ -->
 <section id="members">
   <h2 class="section-header reveal">Великие Шалопаи</h2>
-  <p class="section-subheader reveal">Официальный реестр · 3 подтверждённых члена Ордена</p>
+  <p class="section-subheader reveal" id="members-sub">Официальный реестр · 3 подтверждённых члена Ордена</p>
   <div class="members-grid">
     <div class="member-card reveal">
       <div class="rank-badge">⭐ ОСНОВАТЕЛЬ</div>
       <div class="inactive-badge">⚠ НЕАКТИВЕН</div>
-      <span class="member-avatar">🎩</span>
+      <div class="member-photo-wrap"><div class="member-photo-ph" id="photo-hach"><span class="ph-big">🎩</span><div class="ph-label">фото засекречено</div></div></div>
       <div class="member-name">Хач</div>
       <div class="member-aka">aka hrych (не признан)</div>
-      <div class="member-title">Великий Основатель<br>Орденоносец Шалопайства</div>
+      <div class="member-title">Великий Основатель · Орденоносец Шалопайства<br><span style="font-size:11px;color:#666;">Комиксист · FNAF · Slender · Baldi</span></div>
       <div class="member-stats">
         <div class="stat-row"><span class="stat-label">Ранг:</span><span class="stat-value">Высший Шалопай</span></div>
         <div class="stat-row"><span class="stat-label">Статус:</span><span class="stat-value">🔴 Неактивен</span></div>
@@ -496,7 +637,7 @@
     </div>
     <div class="member-card reveal">
       <div class="rank-badge">🏅 ВЫСШИЙ</div>
-      <span class="member-avatar">💻</span>
+      <div class="member-photo-wrap"><div class="member-photo-ph" id="photo-ars"><span class="ph-big">💻</span><div class="ph-label">фото: Арс</div></div></div>
       <div class="member-name">Арс</div>
       <div class="member-aka">Веб-мастер Ордена</div>
       <div class="member-title">Ответственный за сайт<br>и распространение шалопайства</div>
@@ -509,7 +650,7 @@
     </div>
     <div class="member-card reveal">
       <div class="rank-badge">🏅 ВЫСШИЙ</div>
-      <span class="member-avatar">🎨</span>
+      <div class="member-photo-wrap"><div class="member-photo-ph" id="photo-max"><span class="ph-big">🎨</span><div class="ph-label">фото: Макс</div></div></div>
       <div class="member-name">Макс</div>
       <div class="member-aka">Главный Творец</div>
       <div class="member-title">Министр креативности<br>и мемораспространения</div>
@@ -532,26 +673,26 @@
   <div class="owners-grid">
     <div class="owner-card reveal">
       <div class="owner-seal">ВЛАДЕЛЕЦ I</div>
-      <span class="owner-crown">👔</span>
-      <div class="owner-name">Марселл Тёзкович</div>
-      <div class="owner-aka">Чебуреков · Носатый · Банкир</div>
+      <div class="owner-photo-ph"><span class="ph-big">👔</span><div class="ph-label">Марсель</div></div>
+      <div class="owner-name">Марсель Чебуреков</div>
+      <div class="owner-aka">Тёзкович · Носатый Банкир</div>
       <div class="owner-info">
-        <div class="owner-info-row"><span class="oi-key">ДОЛЖНОСТЬ</span><span class="oi-val">Совладелец Ордена</span></div>
-        <div class="owner-info-row"><span class="oi-key">ПРОЗВИЩЕ</span><span class="oi-val">Носатый & Банкир</span></div>
-        <div class="owner-info-row"><span class="oi-key">ФАМИЛИЯ</span><span class="oi-val">Чебуреков Тёзкович</span></div>
+        <div class="owner-info-row"><span class="oi-key">ДОЛЖНОСТЬ</span><span class="oi-val">Депозитор</span></div>
+        <div class="owner-info-row"><span class="oi-key">ПРОЗВИЩЕ</span><span class="oi-val">Носатый Банкир</span></div>
+        <div class="owner-info-row"><span class="oi-key">ОТЧЕСТВО</span><span class="oi-val">Тёзкович</span></div>
         <div class="owner-info-row"><span class="oi-key">СТАТУС</span><span class="oi-val">🟢 При делах</span></div>
       </div>
     </div>
     <div class="owner-card reveal">
       <div class="owner-seal">ВЛАДЕЛЕЦ II</div>
-      <span class="owner-crown">🐰</span>
+      <div class="owner-photo-ph"><span class="ph-big">🐰</span><div class="ph-label">Бакс Банни</div></div>
       <div class="owner-name">Бакс Банни</div>
       <div class="owner-aka">aka Бакс · Депозитор</div>
       <div class="owner-info">
         <div class="owner-info-row"><span class="oi-key">ДОЛЖНОСТЬ</span><span class="oi-val">Совладелец Ордена</span></div>
         <div class="owner-info-row"><span class="oi-key">ДОСТИЖЕНИЕ</span><span class="oi-val">Депнул Русичку в казик*</span></div>
         <div class="owner-info-row"><span class="oi-key">СТАТУС</span><span class="oi-val">🟢 При делах</span></div>
-        <div class="owner-info-row"><span class="oi-key">ПРИМЕЧАНИЕ</span><span class="oi-val" style="font-size:11px;color:#666;">* нет</span></div>
+        <div class="owner-info-row"><span class="oi-key">ПРИМЕЧАНИЕ</span><span class="oi-val" style="font-size:11px;color:#666;">приближённый к чуду</span></div>
       </div>
     </div>
   </div>
@@ -639,15 +780,15 @@
       <div class="prank-tag">👴 КЛАССИКА</div>
       <span class="prank-icon">👴</span>
       <div class="prank-name">Дед Арсений</div>
-      <p class="prank-desc">Легендарная операция с дедом Арсением. Подробности засекречены по соображениям безопасности.
-        <span class="note">— архивы не раскрывают деталей</span>
+      <p class="prank-desc">Дед Арсений — шалопайский аналог Деда Мороза. Легендарная операция. При открытии архива — подробности будут раскрыты.<span class="archive-only" style="display:none;color:#00ff41;"> ◀ АРХИВ: Арсений был задействован в распределении квасных депозитов.</span>
+        <span class="note" id="arseny-note">— архивы не раскрывают деталей · откройте архив для доступа</span>
       </p>
     </div>
     <div class="prank-card reveal">
       <div class="prank-tag red">🧃 БИЗНЕС</div>
       <span class="prank-icon">🧃☕</span>
       <div class="prank-name">Барыга</div>
-      <p class="prank-desc">Торговля квасом и кофе. Официальная шалопайская коммерция. Рентабельность неизвестна, моральное удовлетворение — максимальное.</p>
+      <p class="prank-desc">Торговля квасом, кофе, сухариками и пончиками. Официальная шалопайская коммерция.<span class="archive-only" style="display:none;color:#00ff41;"> ◀ АРХИВ: оборот — неизвестен. налоги — не уплачены. инспектор — не в курсе.</span> Рентабельность неизвестна, моральное удовлетворение — максимальное.</p>
     </div>
     <div class="prank-card reveal">
       <div class="prank-tag blue">🍽️ КУЛЬТУРА</div>
@@ -677,8 +818,16 @@
       <div class="prank-tag blue">✍️ WINDINGS</div>
       <span class="prank-icon">✏️⭐</span>
       <div class="prank-name">Учитель LOSTMEDIA</div>
-      <p class="prank-desc">Учитель, чьё имя было утрачено навсегда — на нашей, шалопайской волне. Писала замечания шрифтом Wingdings. За выход к доске выдавала стикеры.
-        <span class="note">Собственная песня: «Фасоль в консервной баночке»</span>
+      <p class="prank-desc">Учитель, чьё имя было утрачено навсегда — <span id="lostmedia-teacher-name" style="opacity:0.4;font-style:italic;">имя: [LOSTMEDIA]</span>. Писала замечания шрифтом Wingdings. За выход к доске выдавала стикеры.
+        <span id="wingdings-msg" class="archive-only" style="display:none;margin-top:10px;font-family:'Courier New',monospace;font-size:13px;color:#00ff41;letter-spacing:3px;text-shadow:0 0 8px rgba(0,255,65,0.5);animation:glitch 1.5s infinite;">👍︎💣︎⚐︎💧︎ 👎︎☜︎✌︎👎︎</span>
+      </p>
+    </div>
+    <div class="prank-card reveal">
+      <div class="prank-tag">🎵 КУЛЬТУРА</div>
+      <span class="prank-icon">🫘🎶</span>
+      <div class="prank-name">Фасоль в консервной баночке</div>
+      <p class="prank-desc">Отдельная, самостоятельная гадость. Никак не связана с учителем LOSTMEDIA — это важно.
+        <span class="note">Подробности засекречены. Фасоль была.</span>
       </p>
     </div>
   </div>
@@ -776,6 +925,33 @@
   </div>
 </section>
 
+
+<div class="divider">🚫 ✦ 🚫 ✦ 🚫</div>
+
+<!-- ЧЁРНЫЙ СПИСОК -->
+<section id="blacklist" style="padding:40px 20px;max-width:800px;margin:0 auto;">
+  <h2 class="section-header reveal" style="color:var(--red);">ЧЁРНЫЙ СПИСОК</h2>
+  <p class="section-subheader reveal" style="color:#888;">персоны нон грата · врагам Ордена вход воспрещён</p>
+  <div class="reveal" style="margin-top:24px;">
+    <div style="border:2px solid #c0392b;padding:24px 28px;background:rgba(192,57,43,0.04);font-family:'Special Elite',serif;position:relative;">
+      <div style="position:absolute;top:-12px;left:20px;background:var(--cardboard);color:#c0392b;font-size:10px;padding:2px 12px;letter-spacing:3px;border:1px solid #c0392b;">ДОСЬЕ</div>
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+        <div style="font-size:48px;filter:grayscale(1) contrast(0.5);">🚫</div>
+        <div>
+          <div style="font-size:20px;color:var(--ink);letter-spacing:2px;">ДЭН <span style="font-size:12px;color:#888;">(Дэнчик)</span></div>
+          <div style="font-size:11px;color:#c0392b;letter-spacing:2px;margin:4px 0;">ВРАГ ОРДЕНА · ПЕРСОНА НОН ГРАТА</div>
+          <div style="font-size:13px;color:#666;line-height:1.7;margin-top:8px;">
+            Причина: вредный характер, подстрекательство к разрыву дружбы с Хачом.<br>
+            Подписи в заброшенных домах: <em style="color:#888;">Devastator</em> и <em style="color:#888;">Jack Stone</em>.
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;font-size:10px;color:#333;letter-spacing:2px;border-top:1px solid #222;padding-top:12px;">ВНЕСЁН В СПИСОК: ████ · СТАТУС: АКТИВЕН · УГРОЗА: СРЕДНЯЯ</div>
+      <div style="margin-top:8px;font-size:11px;color:#333;letter-spacing:2px;">ИНИЦИАТОР: <span id="blacklist-author" style="color:#333;letter-spacing:2px;">██████</span><span id="blacklist-author-archive" class="archive-only" style="display:none;color:#00ff41;font-size:11px;letter-spacing:2px;"> → БАКС БАННИ 🐰 · подтверждено архивом</span></div>
+    </div>
+  </div>
+</section>
+
 <div class="divider">🎭 ✦ 🎭 ✦ 🎭</div>
 
 <!-- 11. СЕКРЕТ -->
@@ -808,21 +984,151 @@
   </div>
 </section>
 
+<div class="divider">🤝 ✦ 🤝 ✦ 🤝</div>
+
+<!-- СОУЧАСТНИКИ ОРДЕНА -->
+<section id="accomplices" style="padding:60px 20px;max-width:900px;margin:0 auto;">
+  <h2 class="section-header reveal">СОУЧАСТНИКИ ОРДЕНА</h2>
+  <p class="section-subheader reveal">весь 9В класс · официальные соучастники · не шалопаи, но свои</p>
+
+  <div class="reveal" style="margin-top:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;">
+
+    <div style="border:1px solid #c8b88a;padding:20px;background:rgba(200,184,138,0.06);text-align:center;font-family:'Special Elite',serif;">
+      <div style="font-size:32px;margin-bottom:8px;">🎒</div>
+      <div style="font-size:16px;color:var(--ink);letter-spacing:1px;">Тимофей</div>
+      <div style="font-size:11px;color:#888;margin-top:4px;">9В · соучастник</div>
+      <div style="font-size:10px;color:#555;margin-top:6px;font-style:italic;">«Был рядом. Это засчитывается.»</div>
+    </div>
+
+    <div style="border:1px solid #c8b88a;padding:20px;background:rgba(200,184,138,0.06);text-align:center;font-family:'Special Elite',serif;">
+      <div style="font-size:32px;margin-bottom:8px;">🎒</div>
+      <div style="font-size:16px;color:var(--ink);letter-spacing:1px;">Серёга</div>
+      <div style="font-size:11px;color:#888;margin-top:4px;">9В · соучастник</div>
+      <div style="font-size:10px;color:#555;margin-top:6px;font-style:italic;">«Биография Симена.»</div>
+    </div>
+
+    <div style="border:1px solid var(--yellow);padding:20px;background:rgba(241,196,15,0.04);text-align:center;font-family:'Special Elite',serif;position:relative;">
+      <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--cardboard);color:var(--yellow);font-size:9px;padding:2px 10px;letter-spacing:2px;border:1px solid var(--yellow);">НОВОБРАНЕЦ</div>
+      <div style="font-size:32px;margin-bottom:8px;">⭐</div>
+      <div style="font-size:16px;color:var(--ink);letter-spacing:1px;">Тигран</div>
+      <div style="font-size:11px;color:var(--yellow);margin-top:4px;">новоприбывший · на испытании</div>
+      <div style="font-size:10px;color:#555;margin-top:6px;font-style:italic;">«Распространяет материалы через учителя.»</div>
+    </div>
+
+    <div style="border:1px solid #c8b88a;padding:20px;background:rgba(200,184,138,0.06);text-align:center;font-family:'Special Elite',serif;">
+      <div style="font-size:32px;margin-bottom:8px;">🎒</div>
+      <div style="font-size:16px;color:var(--ink);letter-spacing:1px;">Юсуфчик</div>
+      <div style="font-size:11px;color:#888;margin-top:4px;">9В · соучастник</div>
+      <div style="font-size:10px;color:#555;margin-top:6px;font-style:italic;">«Может передать материал косой в университет.»</div>
+    </div>
+
+  </div>
+
+  <div class="reveal" style="margin-top:24px;text-align:center;font-family:'Special Elite',serif;font-size:12px;color:#555;letter-spacing:2px;border-top:1px solid #333;padding-top:16px;">
+    + весь остальной 9В класс · статус: соучастники по умолчанию
+  </div>
+</section>
+
+
+<div class="divider">📜 ✦ 📜 ✦ 📜</div>
+
+<!-- КАК СТАТЬ ШАЛОПАЕМ -->
+<section id="constitution" style="padding:60px 20px;max-width:800px;margin:0 auto;">
+  <h2 class="section-header reveal">КАК СТАТЬ<br>ШАЛОПАЕМ?</h2>
+  <p class="section-subheader reveal">Шалопайская Конституция · официальный документ</p>
+
+  <div class="reveal" style="margin-top:36px;background:var(--cardboard);border:3px solid var(--ink);padding:36px 40px;font-family:'Special Elite',serif;position:relative;box-shadow:6px 6px 0 rgba(0,0,0,0.15);">
+    <div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);background:var(--cardboard);padding:0 20px;font-family:'Russo One',sans-serif;font-size:13px;letter-spacing:3px;color:var(--ink);border:2px solid var(--ink);">КОНСТИТУЦИЯ ШАЛОПАЕВ</div>
+
+    <!-- Что такое шалость -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:13px;letter-spacing:3px;color:var(--red);margin-bottom:12px;">СТАТЬЯ I · ЧТО СЧИТАЕТСЯ ШАЛОСТЬЮ</div>
+      <p style="line-height:1.9;color:var(--ink);font-size:15px;">
+        Шалостью считается смешное действие или ряд действий, которые подарили людям хорошее настроение.<br>
+        Шалость <strong>должна соответствовать всем трём критериям:</strong>
+      </p>
+      <ul style="margin-top:12px;list-style:none;padding:0;">
+        <li style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.1);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--red);font-weight:bold;min-width:24px;">A)</span>
+          <span style="line-height:1.7;">Никому не навредила, не мешала и не оскорбляла. Никаких последствий — ни физических, ни моральных.</span>
+        </li>
+        <li style="padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.1);display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--red);font-weight:bold;min-width:24px;">Б)</span>
+          <span style="line-height:1.7;">Была смешной или весёлой для большинства присутствующих — не только для исполнителя.</span>
+        </li>
+        <li style="padding:8px 0;display:flex;gap:12px;align-items:flex-start;">
+          <span style="color:var(--red);font-weight:bold;min-width:24px;">В)</span>
+          <span style="line-height:1.7;">Была сделана с умом и выдумкой. Банальность не засчитывается. Шалопайский дух — обязателен.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Требования -->
+    <div style="margin-bottom:28px;">
+      <div style="font-size:13px;letter-spacing:3px;color:var(--red);margin-bottom:12px;">СТАТЬЯ II · ТРЕБОВАНИЯ К КАНДИДАТУ</div>
+      <ul style="list-style:none;padding:0;">
+        <li style="padding:7px 0;display:flex;gap:10px;">
+          <span style="color:var(--yellow);">✓</span>
+          <span>Минимум <strong>две подтверждённые шалости</strong> на счету.</span>
+        </li>
+        <li style="padding:7px 0;display:flex;gap:10px;">
+          <span style="color:var(--yellow);">✓</span>
+          <span><strong>Хорошая репутация</strong> — человек должен быть известен как незлобный и весёлый.</span>
+        </li>
+        <li style="padding:7px 0;display:flex;gap:10px;">
+          <span style="color:var(--yellow);">✓</span>
+          <span>Должен быть <strong>одобрен действующими Шалопаями Высшего Разряда</strong>.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Самоназначение -->
+    <div style="margin-bottom:28px;background:rgba(241,196,15,0.06);border-left:3px solid var(--yellow);padding:16px 20px;">
+      <div style="font-size:13px;letter-spacing:3px;color:var(--yellow);margin-bottom:10px;">СТАТЬЯ III · АВТОНОМНОЕ ПРИСВОЕНИЕ</div>
+      <p style="line-height:1.9;font-size:14px;color:var(--ink);">
+        Если связи с Орденом нет — человек <em>вправе назначить себя Шалопаем самостоятельно</em>,
+        при условии что выполнены <strong>все предыдущие статьи</strong> и
+        накоплено достаточное количество шалостей. Шалопайство — это не звание. Это состояние души.
+      </p>
+    </div>
+
+    <!-- Высший разряд -->
+    <div style="background:rgba(192,57,43,0.06);border-left:3px solid var(--red);padding:16px 20px;">
+      <div style="font-size:13px;letter-spacing:3px;color:var(--red);margin-bottom:10px;">СТАТЬЯ IV · ВЫСШИЙ РАЗРЯД</div>
+      <p style="line-height:1.9;font-size:14px;color:var(--ink);">
+        Для получения статуса <strong>Шалопая Высшего Разряда</strong> необходимо лично
+        проконтактировать с Хачом — Великим Основателем Ордена.
+      </p>
+      <p style="line-height:1.7;font-size:13px;color:#888;margin-top:8px;font-style:italic;">
+        Примечание: Хач пропал. Местонахождение неизвестно. Связь не установлена.<br>
+        Статус Шалопая Высшего Разряда на данный момент <span style="color:var(--red);">фактически недостижим</span>.
+      </p>
+    </div>
+
+    <div style="text-align:right;margin-top:24px;font-size:11px;color:#888;letter-spacing:2px;">— Орден Великих Шалопаев · редакция I</div>
+  </div>
+</section>
+
+
 <!-- FOOTER -->
 <footer id="footer">
   <div class="approval-section reveal">
     <ul class="approval-list">
       <li>ХачTV</li>
       <li>Великим Орденом Шалопаев</li>
-      <li>Турбиной Соли (сертификат № 001)</li>
-      <li>Курочкой Гниль (условно)</li>
-      <li>Гнутым Рублём (безусловно)</li>
+      <li>Компанией «Гнутый Рубль» (безусловно)</li>
     </ul>
   </div>
-  <div class="footer-final reveal">
+  <div class="footer-sponsors reveal" style="text-align:center;margin-bottom:20px;font-family:'Special Elite',serif;font-size:12px;color:#444;letter-spacing:2px;">
+    <div style="margin-bottom:8px;color:#555;">ПРИ ПОДДЕРЖКЕ</div>
+    <span style="margin:0 12px;">ShallowPies Entertainment™</span>·
+    <span style="margin:0 12px;">DGenerate Production</span>·
+    <span style="margin:0 12px;">Chepuh &amp; Sons</span>
+  </div>
+  <div class="footer-final reveal" id="footer-final">
     Если вы учились в этой школе —<br>
     значит вы тоже немного шалопай.
-    <span class="tiny">© ВЕЛИКИЙ ОРДЕН ШАЛОПАЕВ ВЫСШЕГО РАЗРЯДА · ANNO IGNORAMUS · ВСЕ ПРАВА ЗАРЕЗЕРВИРОВАНЫ АБСУРДОМ</span>
+    <span class="tiny" id="footer-tiny">© SHALOPAYA ENTERTAINMENT™ · ВЕЛИКИЙ ОРДЕН ШАЛОПАЕВ · ANNO IGNORAMUS · ВСЕ ПРАВА ЗАЩИЩЕНЫ</span>
   </div>
 </footer>
 
@@ -888,7 +1194,6 @@
   window.addEventListener('resize', drawStrings);
 
   // ══════════════════════════════════════════════
-  // 🎯 КНОПКА С СОПРОТИВЛЕНИЕМ
   // ══════════════════════════════════════════════
   const dontBtn = document.getElementById('dont-btn');
   const dontWrapper = document.getElementById('dont-btn-wrapper');
@@ -1391,24 +1696,7 @@
 
   function smenuArchive() {
     closeSecretMenu();
-    // Все .lostmedia-label временно показывают "FOUND??"
-    document.querySelectorAll('.lostmedia-label').forEach(el => {
-      el.textContent = 'FOUND??';
-      el.style.color = '#00ff41';
-      el.style.textShadow = '0 0 16px #00ff41';
-      el.style.animation = 'none';
-    });
-    showToast('👁 АРХИВ ВСКРЫТ. НО ДАННЫЕ ФРАГМЕНТИРОВАНЫ.', 3500);
-    // Через 4 секунды всё возвращается
-    setTimeout(() => {
-      document.querySelectorAll('.lostmedia-label').forEach(el => {
-        el.textContent = '[LOSTMEDIA]';
-        el.style.color = '';
-        el.style.textShadow = '';
-        el.style.animation = '';
-      });
-      showToast('...сигнал потерян.', 1500);
-    }, 4000);
+    activateArchiveMode();
   }
 
   // ══════════════════════════════════════════════
@@ -1563,6 +1851,175 @@
     `;
     document.head.appendChild(ss);
   }
+
+  // ══════════════════════════════════════════════
+  // 🍺 ПАСХАЛКА: РЕАКТИВНОЕ ПИВО — улетает дальше
+  // ══════════════════════════════════════════════
+  let beerClicks = 0;
+  let beerEl = null;
+  let beerX = 0, beerY = 0;         // текущая позиция стакана
+  let beerVX = 0, beerVY = 0;       // скорость
+  let beerAnimId = null;
+  let beerLaunched = false;
+
+  // Стадии: тексты и скорости
+  const beerStages = [
+    { msg: '🍺 катится...', vx: 3,  vy: -1 },
+    { msg: '🍺 быстрее!',   vx: 6,  vy: -2 },
+    { msg: '🚀 разгоняется!', vx: 11, vy: -4 },
+    { msg: '💥 РЕАКТИВНЫЙ РЕЖИМ', vx: 18, vy: -8 },
+    { msg: '🌌 ТУРБОСКОРОСТЬ',    vx: 30, vy: -15 },
+  ];
+
+  document.querySelectorAll('.artifact-icon').forEach(el => {
+    if (!el.textContent.includes('🍺')) return;
+    el.style.cursor = 'pointer';
+    el.title = '🍺 попробуй';
+
+    el.addEventListener('click', (e) => {
+      beerClicks++;
+      const stage = Math.min(beerClicks - 1, beerStages.length - 1);
+      const { msg, vx, vy } = beerStages[stage];
+
+      showToast(msg, 1400);
+
+      // При первом клике — клонируем элемент в fixed-позицию
+      if (!beerLaunched) {
+        beerLaunched = true;
+        const rect = el.getBoundingClientRect();
+        beerX = rect.left + rect.width / 2;
+        beerY = rect.top + rect.height / 2;
+
+        // Прячем оригинал
+        el.style.opacity = '0';
+
+        // Создаём летящий стакан
+        beerEl = document.createElement('div');
+        beerEl.textContent = '🍺';
+        beerEl.style.cssText = `
+          position: fixed;
+          left: ${beerX}px; top: ${beerY}px;
+          font-size: 52px;
+          pointer-events: none;
+          z-index: 9999;
+          transform: translate(-50%, -50%);
+          transition: none;
+          filter: drop-shadow(0 0 8px rgba(241,196,15,0.6));
+        `;
+        document.body.appendChild(beerEl);
+      }
+
+      // Останавливаем предыдущую анимацию
+      if (beerAnimId) cancelAnimationFrame(beerAnimId);
+
+      // Устанавливаем скорость в направлении вправо-вверх с лёгким разбросом
+      beerVX = vx + (Math.random() - 0.3) * 3;
+      beerVY = vy - Math.random() * 2;
+
+      // Добавляем реактивный шлейф при высоких стадиях
+      if (stage >= 3) {
+        beerEl.style.filter = 'drop-shadow(0 0 16px rgba(255,100,0,0.9)) drop-shadow(0 0 32px rgba(255,50,0,0.6))';
+        beerEl.style.fontSize = stage >= 4 ? '64px' : '56px';
+      }
+
+      function flyBeer() {
+        beerX += beerVX;
+        beerY += beerVY;
+        beerVY += 0.3; // гравитация
+        beerVX *= 0.995; // лёгкое трение
+
+        // Вращение пропорционально скорости
+        const angle = Math.atan2(beerVY, beerVX) * (180 / Math.PI);
+        beerEl.style.left = beerX + 'px';
+        beerEl.style.top  = beerY + 'px';
+        beerEl.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+
+        // Пока в пределах экрана + запас — продолжаем
+        const margin = 200;
+        const inScreen = beerX > -margin && beerX < window.innerWidth + margin
+                      && beerY > -margin && beerY < window.innerHeight + margin;
+
+        if (inScreen) {
+          beerAnimId = requestAnimationFrame(flyBeer);
+        } else {
+          // Улетел! Сбрасываем на исходную позицию через секунду
+          beerAnimId = null;
+          setTimeout(() => {
+            if (!beerEl) return;
+            const rect2 = el.getBoundingClientRect();
+            beerX = rect2.left + rect2.width / 2;
+            beerY = rect2.top + rect2.height / 2;
+            beerVX = 0; beerVY = 0;
+            beerEl.style.left = beerX + 'px';
+            beerEl.style.top  = beerY + 'px';
+            beerEl.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+            beerEl.style.filter = 'drop-shadow(0 0 8px rgba(241,196,15,0.6))';
+            beerEl.style.fontSize = '52px';
+            beerLaunched = false;
+            beerClicks = 0;
+            beerEl.remove();
+            beerEl = null;
+            el.style.opacity = '1';
+            showToast('🍺 вернулось. механизм неизвестен. физики молчат.', 2000);
+          }, 800);
+        }
+      }
+      flyBeer();
+    });
+  });
+
+  // ══════════════════════════════════════════════
+  // ⏱️ ПАСХАЛКА: КРОССОВОК ВРЕМЕНИ — CRT/ЧБ эффект
+  // ══════════════════════════════════════════════
+  let crossClicks = 0;
+  document.querySelectorAll('.artifact-icon').forEach(el => {
+    if (el.textContent.includes('👟')) {
+      el.style.cursor = 'pointer';
+      el.title = '⏱️ ???';
+      el.addEventListener('click', () => {
+        crossClicks++;
+        if (crossClicks % 2 === 1) {
+          // Нечётный клик — CRT/ELT эффект
+          document.body.classList.remove('bw-filter');
+          if (!document.getElementById('crt-overlay')) {
+            const crt = document.createElement('div');
+            crt.id = 'crt-overlay';
+            crt.className = 'crt-effect';
+            document.body.appendChild(crt);
+          }
+          // Аватарка Хача меняется на "современную"
+          const hachPh = document.getElementById('photo-hach');
+          if (hachPh) {
+            hachPh.querySelector('.ph-big').textContent = '🤖';
+            hachPh.querySelector('.ph-label').textContent = 'хач: современный';
+            hachPh.style.borderColor = '#00ff41';
+          }
+          showToast('⚡ КРОВОСОК АКТИВИРОВАН · временной сдвиг: ELT', 2000);
+        } else {
+          // Чётный клик — ЧБ плёночный фильтр
+          const crtEl = document.getElementById('crt-overlay');
+          if (crtEl) crtEl.remove();
+          document.body.classList.add('bw-filter');
+          const hachPh = document.getElementById('photo-hach');
+          if (hachPh) {
+            hachPh.querySelector('.ph-big').textContent = '🎩';
+            hachPh.querySelector('.ph-label').textContent = 'хач: архивное фото';
+            hachPh.style.borderColor = '#888';
+          }
+          showToast('📽️ ПЛЁНОЧНЫЙ РЕЖИМ · архивные кадры', 2000);
+          setTimeout(() => {
+            document.body.classList.remove('bw-filter');
+            const hachPhR = document.getElementById('photo-hach');
+            if (hachPhR) {
+              hachPhR.querySelector('.ph-big').textContent = '🎩';
+              hachPhR.querySelector('.ph-label').textContent = 'фото засекречено';
+              hachPhR.style.borderColor = '';
+            }
+          }, 4000);
+        }
+      });
+    }
+  });
 
   // ══════════════════════════════════════════════
   // 🌟 ПАСХАЛКА 8: ДИВАЙДЕРЫ — клик меняет эмодзи
@@ -1833,52 +2290,310 @@
           casino.style.cssText = `position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:9995;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:fragAppear 0.3s ease;`;
           const symbols = ['🧂','🍺','🍗','👁','🎩','🇦🇱','🌀','🎭'];
           const getSlot = ()=>symbols[Math.floor(Math.random()*symbols.length)];
-          casino.innerHTML = `
-            <div style="background:#0d0d0d;border:2px solid #f1c40f;padding:36px 50px;text-align:center;font-family:'Special Elite',serif;color:#f1c40f;max-width:400px;width:90%;box-shadow:0 0 60px rgba(241,196,15,0.2);">
-              <div style="font-size:13px;letter-spacing:4px;color:#666;margin-bottom:6px;">ШАЛОПАЙСКОЕ КАЗИНО</div>
-              <div style="font-size:11px;color:#444;margin-bottom:20px;letter-spacing:2px;">валюта: шалобакс</div>
-              <div id="casino-slots" style="font-size:52px;letter-spacing:16px;margin:16px 0;">${getSlot()} ${getSlot()} ${getSlot()}</div>
-              <div id="casino-result" style="font-size:16px;margin:14px 0;min-height:24px;color:#ccc;"></div>
-              <div onclick="spinCasino()" style="background:rgba(241,196,15,0.1);border:1px solid #f1c40f;color:#f1c40f;padding:10px 30px;cursor:pointer;font-size:16px;letter-spacing:2px;margin-top:8px;display:inline-block;">[ КРУТИТЬ ]</div>
-              <div style="margin-top:20px;font-size:11px;color:#333;letter-spacing:1px;">нажми мимо чтобы закрыть</div>
-            </div>
-          `;
-          casino.addEventListener('click', (e)=>{ if(e.target===casino) casino.remove(); });
-          document.body.appendChild(casino);
+          openShalopaiCasino();
         }
       });
     }
   });
 
+
+  // ══════════════════════════════════════════════
+  // 🎰 ШАЛОПАЙСКОЕ КАЗИНО — рулетка + слоты
+  // ══════════════════════════════════════════════
+  let casinoBalance = 100;
+  const casinoSymbols = ['🧂','🍺','🍗','👁','🎩','🇦🇱','🌀','🎭'];
+  const rouletteNums = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+  const rouletteRed = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+
+  function openShalopaiCasino() {
+    if (document.getElementById('shal-casino')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'shal-casino';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:9995;display:flex;align-items:center;justify-content:center;animation:fragAppear 0.3s ease;';
+
+    overlay.innerHTML = `
+      <div style="background:#0a0a0a;border:2px solid #f1c40f;padding:28px 32px;text-align:center;font-family:'Special Elite',serif;color:#f1c40f;max-width:520px;width:95%;box-shadow:0 0 60px rgba(241,196,15,0.15);position:relative;max-height:90vh;overflow-y:auto;">
+        <div style="font-size:10px;letter-spacing:4px;color:#555;margin-bottom:4px;">ШАЛОПАЙСКОЕ КАЗИНО</div>
+        <div style="font-size:22px;letter-spacing:2px;margin-bottom:2px;">⚜ КАЗИНО ГНУТЫЙ РУБЛЬ ⚜</div>
+        <div style="font-size:11px;color:#444;margin-bottom:18px;letter-spacing:1px;">валюта: шалобакс · баланс: <span id="casino-bal">${casinoBalance}</span> 🪙</div>
+
+        <!-- ВКЛАДКИ -->
+        <div style="display:flex;gap:0;margin-bottom:20px;border:1px solid #333;">
+          <div id="tab-slots" onclick="casinoTab('slots')" style="flex:1;padding:8px;cursor:pointer;background:rgba(241,196,15,0.12);border-right:1px solid #333;letter-spacing:2px;font-size:12px;">СЛОТЫ</div>
+          <div id="tab-roulette" onclick="casinoTab('roulette')" style="flex:1;padding:8px;cursor:pointer;letter-spacing:2px;font-size:12px;color:#666;">РУЛЕТКА</div>
+        </div>
+
+        <!-- СЛОТЫ -->
+        <div id="casino-panel-slots">
+          <div id="casino-slots" style="font-size:48px;letter-spacing:12px;margin:10px 0;min-height:64px;">🎰 🎰 🎰</div>
+          <div id="casino-result" style="font-size:14px;margin:10px 0;min-height:22px;color:#ccc;letter-spacing:1px;"></div>
+          <div style="margin:12px 0;display:flex;align-items:center;justify-content:center;gap:10px;">
+            <span style="font-size:12px;color:#666;">ставка:</span>
+            <div onclick="casinoBet(-10)" style="border:1px solid #333;padding:4px 10px;cursor:pointer;color:#888;">−</div>
+            <span id="slots-bet" style="font-size:14px;min-width:40px;">10</span>
+            <div onclick="casinoBet(+10)" style="border:1px solid #333;padding:4px 10px;cursor:pointer;color:#888;">+</div>
+          </div>
+          <div onclick="spinCasino()" style="background:rgba(241,196,15,0.1);border:1px solid #f1c40f;color:#f1c40f;padding:10px 28px;cursor:pointer;font-size:14px;letter-spacing:2px;margin-top:4px;display:inline-block;">[ КРУТИТЬ ]</div>
+        </div>
+
+        <!-- РУЛЕТКА -->
+        <div id="casino-panel-roulette" style="display:none;">
+          <canvas id="roulette-canvas" width="280" height="280" style="display:block;margin:0 auto 12px;border-radius:50%;border:3px solid #f1c40f;box-shadow:0 0 20px rgba(241,196,15,0.2);"></canvas>
+          <div id="roulette-ball" style="font-size:24px;margin:6px 0;">🔮</div>
+          <div id="roulette-result" style="font-size:14px;min-height:22px;color:#ccc;letter-spacing:1px;margin:8px 0;"></div>
+
+          <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:10px 0;">
+            <div onclick="rouletteBetType('red')"   id="rbet-red"   style="padding:6px 14px;cursor:pointer;background:#c0392b;color:#fff;font-size:12px;letter-spacing:1px;border:2px solid transparent;">КРАСНОЕ</div>
+            <div onclick="rouletteBetType('black')" id="rbet-black" style="padding:6px 14px;cursor:pointer;background:#222;color:#ccc;font-size:12px;letter-spacing:1px;border:2px solid transparent;">ЧЁРНОЕ</div>
+            <div onclick="rouletteBetType('zero')"  id="rbet-zero"  style="padding:6px 14px;cursor:pointer;background:#1a5c1a;color:#0f0;font-size:12px;letter-spacing:1px;border:2px solid transparent;">ЗЕРО</div>
+            <div onclick="rouletteBetType('even')"  id="rbet-even"  style="padding:6px 14px;cursor:pointer;background:#111;color:#aaa;font-size:12px;letter-spacing:1px;border:2px solid transparent;">ЧЁТНОЕ</div>
+            <div onclick="rouletteBetType('odd')"   id="rbet-odd"   style="padding:6px 14px;cursor:pointer;background:#111;color:#aaa;font-size:12px;letter-spacing:1px;border:2px solid transparent;">НЕЧЁТНОЕ</div>
+          </div>
+          <div style="font-size:11px;color:#555;margin:4px 0;">ставка: <span id="roulette-bet-show">10</span> 🪙 · тип: <span id="roulette-bet-type">не выбран</span></div>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;">
+            <div onclick="rouletteBetAmount(-10)" style="border:1px solid #333;padding:4px 10px;cursor:pointer;color:#888;">−</div>
+            <div onclick="rouletteBetAmount(+10)"  style="border:1px solid #333;padding:4px 10px;cursor:pointer;color:#888;">+</div>
+          </div>
+          <div onclick="spinRoulette()" style="background:rgba(241,196,15,0.1);border:1px solid #f1c40f;color:#f1c40f;padding:10px 28px;cursor:pointer;font-size:14px;letter-spacing:2px;margin-top:10px;display:inline-block;">[ КРУТИТЬ КОЛЕСО ]</div>
+        </div>
+
+        <div style="margin-top:20px;font-size:10px;color:#333;letter-spacing:2px;">нажми мимо · закрыть</div>
+      </div>
+    `;
+    overlay.addEventListener('click', (e)=>{ if(e.target===overlay) { overlay.remove(); } });
+    document.body.appendChild(overlay);
+    updateCasinoBal();
+    drawRouletteWheel(0);
+  }
+
+  function updateCasinoBal() {
+    const el = document.getElementById('casino-bal');
+    if (el) el.textContent = casinoBalance;
+  }
+
+  let slotsBet = 10;
+  function casinoBet(d) {
+    slotsBet = Math.max(10, Math.min(casinoBalance, slotsBet + d));
+    const el = document.getElementById('slots-bet');
+    if (el) el.textContent = slotsBet;
+  }
+
+  function casinoTab(tab) {
+    const panels = ['slots','roulette'];
+    panels.forEach(p => {
+      const panel = document.getElementById('casino-panel-' + p);
+      const tabEl = document.getElementById('tab-' + p);
+      if (panel) panel.style.display = p === tab ? '' : 'none';
+      if (tabEl) {
+        tabEl.style.background = p === tab ? 'rgba(241,196,15,0.12)' : 'transparent';
+        tabEl.style.color = p === tab ? '#f1c40f' : '#666';
+      }
+    });
+    if (tab === 'roulette') drawRouletteWheel(0);
+  }
+
   window.spinCasino = function() {
     const slots = document.getElementById('casino-slots');
     const result = document.getElementById('casino-result');
     if (!slots || !result) return;
-    const symbols = ['🧂','🍺','🍗','👁','🎩','🇦🇱','🌀','🎭'];
+    if (casinoBalance < slotsBet) { result.textContent = '💸 Недостаточно шалобаксов!'; result.style.color='#c0392b'; return; }
+    casinoBalance -= slotsBet;
+    updateCasinoBal();
+
+    const syms = casinoSymbols;
     let spins = 0;
     const spin = setInterval(()=>{
-      const a=symbols[Math.floor(Math.random()*symbols.length)];
-      const b=symbols[Math.floor(Math.random()*symbols.length)];
-      const c=symbols[Math.floor(Math.random()*symbols.length)];
+      const a=syms[Math.floor(Math.random()*syms.length)];
+      const b=syms[Math.floor(Math.random()*syms.length)];
+      const c=syms[Math.floor(Math.random()*syms.length)];
       slots.textContent = `${a} ${b} ${c}`;
       spins++;
-      if (spins >= 12) {
+      if (spins >= 14) {
         clearInterval(spin);
+        let win = 0, msg = '', col = '#ccc';
         if (a===b && b===c) {
-          result.textContent = '🏆 ДЖЕКПОТ! +1000 шалобаксов';
-          result.style.color = '#f1c40f';
+          win = slotsBet * 10; msg = `🏆 ДЖЕКПОТ! +${win} 🪙`; col='#f1c40f';
           showToast('🏆 ДЖЕКПОТ В ШАЛОПАЙСКОМ КАЗИНО!', 3000);
         } else if (a===b || b===c || a===c) {
-          result.textContent = '✨ Пара! +50 шалобаксов';
-          result.style.color = '#ccc';
+          win = slotsBet * 2; msg = `✨ Пара! +${win} 🪙`; col='#aaa';
         } else {
           const loses = ['Депнул (нет)','шалобаксы испарились','Гнутый Рубль не помог','попробуй ещё раз'];
-          result.textContent = '😔 ' + loses[Math.floor(Math.random()*loses.length)];
-          result.style.color = '#c0392b';
+          msg = '😔 ' + loses[Math.floor(Math.random()*loses.length)]; col='#c0392b';
         }
+        casinoBalance += win;
+        updateCasinoBal();
+        result.textContent = msg; result.style.color = col;
       }
     }, 80);
   };
+
+  // ── РУЛЕТКА ──
+  let rouletteBet = 10;
+  let rouletteBetChoice = null;
+  let rouletteSpinning = false;
+  let rouletteAngle = 0;
+
+  function rouletteBetType(type) {
+    rouletteBetChoice = type;
+    ['red','black','zero','even','odd'].forEach(t => {
+      const el = document.getElementById('rbet-' + t);
+      if (el) el.style.border = t === type ? '2px solid #f1c40f' : '2px solid transparent';
+    });
+    const show = document.getElementById('roulette-bet-type');
+    if (show) show.textContent = {red:'красное',black:'чёрное',zero:'зеро',even:'чётное',odd:'нечётное'}[type] || type;
+  }
+
+  function rouletteBetAmount(d) {
+    rouletteBet = Math.max(10, Math.min(casinoBalance, rouletteBet + d));
+    const el = document.getElementById('roulette-bet-show');
+    if (el) el.textContent = rouletteBet;
+  }
+
+  function drawRouletteWheel(angle) {
+    const canvas = document.getElementById('roulette-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2, R = W/2 - 8;
+    const nums = rouletteNums;
+    const N = nums.length;
+    const step = (Math.PI*2) / N;
+    ctx.clearRect(0,0,W,H);
+
+    // Outer decorative ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, R+6, 0, Math.PI*2);
+    ctx.fillStyle = '#2a1800';
+    ctx.fill();
+
+    for (let i = 0; i < N; i++) {
+      // Sector i: under the pointer (top = -PI/2) when angle=0, sector 0 is at top.
+      // So sector i spans angles: (angle - PI/2 + i*step) to (angle - PI/2 + (i+1)*step)
+      const a1 = angle - Math.PI/2 + i * step;
+      const a2 = a1 + step;
+      const num = nums[i];
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, R, a1, a2);
+      ctx.closePath();
+      ctx.fillStyle = num === 0 ? '#0d3d0d' : rouletteRed.includes(num) ? '#5c0f0f' : '#111';
+      ctx.fill();
+      ctx.strokeStyle = '#444';
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+
+      // Text at midpoint of sector, placed near the rim
+      const midA = a1 + step / 2;
+      const textR = R - 16;
+      ctx.save();
+      ctx.translate(cx + Math.cos(midA) * textR, cy + Math.sin(midA) * textR);
+      ctx.rotate(midA + Math.PI / 2); // upright along radius
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'bold 11px monospace';
+      ctx.fillStyle = num === 0 ? '#00ff41' : rouletteRed.includes(num) ? '#ff8080' : '#ccc';
+      ctx.fillText(String(num), 0, 0);
+      ctx.restore();
+    }
+
+    // Inner gold ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 0.28, 0, Math.PI*2);
+    ctx.fillStyle = '#f1c40f';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 0.18, 0, Math.PI*2);
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fill();
+
+    // Pointer — fixed triangle at top, drawn LAST so it's always on top
+    ctx.beginPath();
+    ctx.moveTo(cx, 2);
+    ctx.lineTo(cx - 10, 22);
+    ctx.lineTo(cx + 10, 22);
+    ctx.closePath();
+    ctx.fillStyle = '#f1c40f';
+    ctx.shadowColor = 'rgba(241,196,15,0.8)';
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  window.spinRoulette = function() {
+    if (rouletteSpinning) return;
+    const result = document.getElementById('roulette-result');
+    if (!rouletteBetChoice) { if(result) { result.textContent = '⚠ Выбери тип ставки!'; result.style.color='#c0392b'; } return; }
+    if (casinoBalance < rouletteBet) { if(result) { result.textContent = '💸 Мало шалобаксов!'; result.style.color='#c0392b'; } return; }
+
+    casinoBalance -= rouletteBet;
+    updateCasinoBal();
+    rouletteSpinning = true;
+    if (result) { result.textContent = '...крутится...'; result.style.color='#666'; }
+
+    const ballEl = document.getElementById('roulette-ball');
+
+    const landIdx = Math.floor(Math.random() * rouletteNums.length);
+    const landNum = rouletteNums[landIdx];
+    const N = rouletteNums.length;
+    const step = (Math.PI*2) / N;
+
+    // Sector i is under the pointer when: angle - PI/2 + i*step = -PI/2
+    // => angle = -i * step
+    // We add extra full spins for visual flair
+    const baseTarget = -(landIdx * step);
+    // Normalise current angle to [0, 2PI) so we spin forward
+    const normCurrent = ((rouletteAngle % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+    const normTarget  = ((baseTarget    % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+    const diff = ((normTarget - normCurrent) + Math.PI*2) % (Math.PI*2);
+    const extraSpins = (4 + Math.floor(Math.random()*3)) * Math.PI * 2;
+    const totalAngle = extraSpins + diff;
+
+    let start = null;
+    const duration = 3500 + Math.random()*1000;
+    const startAngle = rouletteAngle;
+
+    function easeOut(t) { return 1 - Math.pow(1-t, 4); }
+
+    function animate(ts) {
+      if (!start) start = ts;
+      const elapsed = ts - start;
+      const t = Math.min(elapsed / duration, 1);
+      const current = startAngle + totalAngle * easeOut(t);
+      rouletteAngle = current;
+      drawRouletteWheel(current);
+      if (ballEl) ballEl.textContent = t < 1 ? ['🔮','💫','⭐','✨'][Math.floor(t*20)%4] : '🎯';
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        rouletteSpinning = false;
+        // Store the exact final angle so next spin starts from here
+        rouletteAngle = startAngle + totalAngle;
+
+        // Determine win
+        const isRed = rouletteRed.includes(landNum);
+        const isZero = landNum === 0;
+        let win = 0, msg = '', col = '#ccc';
+
+        const betT = rouletteBetChoice;
+        if (betT==='zero' && isZero)   { win = rouletteBet*35; msg=`🟢 ЗЕРО! +${win} 🪙`; col='#00ff41'; }
+        else if (betT==='red'  && isRed && !isZero)   { win = rouletteBet*2;  msg=`🔴 Красное! +${win} 🪙`; col='#e74c3c'; }
+        else if (betT==='black' && !isRed && !isZero) { win = rouletteBet*2;  msg=`⬛ Чёрное! +${win} 🪙`; col='#aaa'; }
+        else if (betT==='even' && !isZero && landNum%2===0) { win = rouletteBet*2; msg=`✌️ Чётное! +${win} 🪙`; col='#aaa'; }
+        else if (betT==='odd'  && !isZero && landNum%2===1) { win = rouletteBet*2; msg=`1️⃣ Нечётное! +${win} 🪙`; col='#aaa'; }
+        else { msg=`😔 Выпало ${landNum}. Шалобаксы ушли.`; col='#c0392b'; }
+
+        if (win) casinoBalance += win;
+        updateCasinoBal();
+        if (result) { result.textContent = `Выпало: ${landNum} · ${msg}`; result.style.color=col; }
+        if (win >= rouletteBet*35) showToast('🟢 ШАЛОЗЕРО! ЛЕГЕНДА!', 3000);
+        if (ballEl) ballEl.textContent = '🎯';
+      }
+    }
+    requestAnimationFrame(animate);
+  };
+
 
   // ══════════════════════════════════════════════
   // 🌟 ПАСХАЛКА 16: КУРСОР-СЛЕД при быстром движении
@@ -1907,6 +2622,384 @@
     }
   }, 1000);
 
+
+
+  // ══════════════════════════════════════════════
+  // 🏆 СИСТЕМА ДОСТИЖЕНИЙ
+  // ══════════════════════════════════════════════
+  const ACHIEVEMENTS = {
+    first_click:    { icon:'👆', title:'ПЕРВЫЙ ШАГ',       desc:'Ты кликнул. Начало положено.' },
+    corner_found:   { icon:'🔍', title:'СЛЕДОПЫТ',         desc:'Нашёл угловую зону.' },
+    archive_open:   { icon:'📂', title:'АРХИВАРИУС',       desc:'Открыл секретный архив.' },
+    hach_summoned:  { icon:'🎩', title:'СВИДЕТЕЛЬ ХАЧА',   desc:'Призвал Основателя.' },
+    albania_mode:   { icon:'🇦🇱', title:'ПОДДАННЫЙ АЛБАНИИ', desc:'Активировал Родину.' },
+    salt_explode:   { icon:'🧂', title:'ТУРБОСОЛЕВАР',     desc:'10 кликов по соли. Мир спасён.' },
+    chicken_woke:   { icon:'🍗', title:'РАЗБУДИЛ ГНИЛЬ',   desc:'Курочка Гниль недовольна.' },
+    dosye_opened:   { icon:'🕵️', title:'ДЕТЕКТИВ',         desc:'Прочитал досье Хача.' },
+    casino_jackpot: { icon:'🎰', title:'ШАЛОБАКСОВЫЙ БОГ', desc:'Джекпот в шалопайском казино!' },
+    konami_done:    { icon:'🎮', title:'МАСТЕР КОДОВ',     desc:'Konami Code. Классика.' },
+    manifesto_held: { icon:'📜', title:'ХРАНИТЕЛЬ СЛОВА',  desc:'Удержал Манифест 2 секунды.' },
+    scrolled_end:   { icon:'🏁', title:'ДОШЁЛ ДО КОНЦА',   desc:'Прочитал всё. Или нет.' },
+    secret_word:    { icon:'⌨️', title:'ШАЛОШИФРОВЩИК',    desc:'Ввёл секретное слово.' },
+    archive_mode:   { icon:'🌑', title:'РЕЖИМ АРХИВА',     desc:'Страница открыла истинный облик.' },
+    click100:       { icon:'💯', title:'СТО КЛИКОВ',       desc:'Ты — Великий Шалопай.' },
+    all_artifacts:  { icon:'🏛️', title:'МУЗЕЙЩИК',         desc:'Кликнул по всем артефактам.' },
+  };
+
+  const unlockedAchievements = new Set();
+
+  function unlockAchievement(key) {
+    if (unlockedAchievements.has(key)) return;
+    const a = ACHIEVEMENTS[key];
+    if (!a) return;
+    unlockedAchievements.add(key);
+
+    const panel = document.getElementById('achievements-panel');
+    const el = document.createElement('div');
+    el.className = 'achievement-popup';
+    el.innerHTML = `
+      <span class="achieve-icon">${a.icon}</span>
+      <span class="achieve-text">
+        <span class="achieve-title">ДОСТИЖЕНИЕ: ${a.title}</span>
+        <span class="achieve-desc">${a.desc}</span>
+      </span>
+    `;
+    panel.appendChild(el);
+
+    // Убираем через 4 секунды
+    setTimeout(() => {
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 400);
+    }, 4000);
+
+    // Первое достижение — показываем подсказку про другие
+    if (unlockedAchievements.size === 1) {
+      setTimeout(() => showNudge('psst... на странице спрятано ещё ' + (Object.keys(ACHIEVEMENTS).length - 1) + ' секретов'), 5000);
+    }
+    if (unlockedAchievements.size === Math.floor(Object.keys(ACHIEVEMENTS).length / 2)) {
+      setTimeout(() => showNudge('половина секретов найдена. ты близко.'), 1000);
+    }
+    if (unlockedAchievements.size === Object.keys(ACHIEVEMENTS).length) {
+      setTimeout(() => {
+        showNudge('ВСЕ СЕКРЕТЫ НАЙДЕНЫ. ШАЛОПАЙСТВО: МАКСИМУМ 🏆');
+        showToast('🏆 ВСЕ ' + Object.keys(ACHIEVEMENTS).length + ' ДОСТИЖЕНИЙ РАЗБЛОКИРОВАНЫ!', 5000);
+        activateKonami(); // финальный фейерверк
+      }, 1000);
+    }
+  }
+
+  // Достижения за smenu* — через делегирование кликов (безопасно, без переназначения функций)
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest ? e.target.closest('.smenu-btn') : null;
+    if (!btn) return;
+    const txt = btn.textContent || '';
+    if (txt.includes('Призвать Хача')) unlockAchievement('hach_summoned');
+    if (txt.includes('Активировать Албанию')) unlockAchievement('albania_mode');
+    if (txt.includes('Открыть архив')) unlockAchievement('archive_open');
+  });
+
+  // Отслеживаем первый клик вообще
+  let firstClickDone = false;
+  document.addEventListener('click', () => {
+    if (!firstClickDone) { firstClickDone = true; unlockAchievement('first_click'); }
+  }, { once: true });
+
+  // ── Отслеживание клика по угловой зоне ──
+  const _origCornerZoneClick = cornerZone.onclick;
+  cornerZone.addEventListener('click', () => unlockAchievement('corner_found'), { once: true });
+
+  // ── Отслеживание артефактов ──
+  const clickedArtifacts = new Set();
+  document.querySelectorAll('.artifact-card').forEach((card, i) => {
+    card.addEventListener('click', () => {
+      clickedArtifacts.add(i);
+      if (clickedArtifacts.size >= document.querySelectorAll('.artifact-card').length) {
+        unlockAchievement('all_artifacts');
+      }
+    });
+  });
+
+  // ══════════════════════════════════════════════
+  // 💡 ПОДСКАЗКИ-НАМЁКИ (hint nudge)
+  // Периодически всплывают — ведут к пасхалкам
+  // ══════════════════════════════════════════════
+  const nudgeEl = document.getElementById('hint-nudge');
+
+  function showNudge(text, duration=3500) {
+    nudgeEl.textContent = text;
+    nudgeEl.style.opacity = '1';
+    setTimeout(() => nudgeEl.style.opacity = '0', duration);
+  }
+
+  // Очередь подсказок — каждые 30–60 секунд
+  const nudgeQueue = [
+    { delay: 18000,  text: 'psst... попробуй кликнуть в правый верхний угол 👆' },
+    { delay: 45000,  text: 'некоторые слова на этой странице... интерактивны 🧂' },
+    { delay: 80000,  text: 'а ты пробовал удержать Манифест? 📜' },
+    { delay: 120000, text: 'двойной клик на фото детективной доски... 🔍' },
+    { delay: 160000, text: 'попробуй набрать на клавиатуре что-нибудь шалопайское ⌨️' },
+    { delay: 200000, text: 'кликни на Курочку Гниль. много раз. 🍗' },
+    { delay: 240000, text: '↑↑↓↓←→←→BA — классика' },
+  ];
+  nudgeQueue.forEach(({ delay, text }) => {
+    setTimeout(() => {
+      // Показываем только если достижений ещё не все
+      if (unlockedAchievements.size < Object.keys(ACHIEVEMENTS).length) {
+        showNudge(text, 4000);
+      }
+    }, delay);
+  });
+
+  // ══════════════════════════════════════════════
+  // 🌑 АРХИВНЫЙ РЕЖИМ — меняет текст по всей странице
+  // Вызывается из smenuArchive после активации
+  // ══════════════════════════════════════════════
+  let archiveModeActive = false;
+
+  function activateArchiveMode() {
+    if (archiveModeActive) {
+      deactivateArchiveMode();
+      return;
+    }
+    archiveModeActive = true;
+    unlockAchievement('archive_mode');
+
+    document.body.classList.add('archive-mode');
+
+    // Показываем архивные вставки в тексте
+    document.querySelectorAll('.archive-only').forEach(el => {
+      el.style.display = 'inline';
+    });
+    // Учитель LOSTMEDIA — показываем "имя"
+    const teacherName = document.getElementById('lostmedia-teacher-name');
+    if (teacherName) {
+      teacherName.style.opacity = '1';
+      teacherName.style.color = '#00ff41';
+      teacherName.textContent = 'имя: Наталья Алексеевна';
+    }
+    // Чёрный список — Бакс рассекречивается с анимацией
+    const blAuthor = document.getElementById('blacklist-author');
+    if (blAuthor) {
+      const frames = ['██████','▓█████','▓▓████','▓▓▓███','▓▓▓▓██','▓▓▓▓▓█','БАКС Б','БАКС БА','БАКС БАН','БАКС БАННИ'];
+      let fi = 0;
+      blAuthor.style.color = '#00ff41';
+      const reveal = setInterval(() => {
+        blAuthor.textContent = frames[fi++];
+        if (fi >= frames.length) {
+          clearInterval(reveal);
+          blAuthor.textContent = 'БАКС БАННИ 🐰';
+          blAuthor.style.textShadow = '0 0 8px rgba(0,255,65,0.5)';
+        }
+      }, 80);
+    }
+
+    // Меняем тексты по всей странице
+    const replacements = [
+      {
+        id: 'board-subtitle',
+        normal: 'Досье · Высший разряд · Совершенно не секретно',
+        archive: 'АРХИВ · УРОВЕНЬ: ШАЛОПАЙ · ДАННЫЕ ЧАСТИЧНО ВОССТАНОВЛЕНЫ'
+      },
+      {
+        id: 'legend-text-2',
+        archive: 'Он основал Орден. Назначил первых. И исчез.<br><br><span style="color:#00ff41;font-size:0.8em;">[ архивная запись #003 · восстановлено: частично ]</span>'
+      },
+      {
+        id: 'legend-quote',
+        normal: '"Личность Хача по сей день<br>остаётся не установленной."',
+        archive: '"Личность Хача по сей день<br>остаётся не установленной."<br><span style="color:#00ff41;font-size:0.7em;letter-spacing:2px;">[ архив: последний сигнал — Албания. дата: ████ ]</span>'
+      },
+      {
+        id: 'legend-quote-src',
+        normal: '— архивы Ордена, том I',
+        archive: '— архивы Ордена, том I · <span style="color:#c0392b;">том II засекречен</span>'
+      },
+      {
+        id: 'hach-quotes-sub',
+        normal: 'подтверждённые цитаты · засекреченных материалов больше нет',
+        archive: 'подтверждённые цитаты · <span style="color:#00ff41;">архив: обнаружено ещё 2 записи · статус: нечитаемо</span>'
+      },
+      {
+        id: 'members-sub',
+        normal: 'Официальный реестр · 3 подтверждённых члена Ордена',
+        archive: 'Официальный реестр · <span style="color:#00ff41;">архив: 4-й член? · данные удалены · восстановление невозможно</span>'
+      },
+      {
+        id: 'footer-final',
+        archive: 'Если вы учились в этой школе —<br>значит вы тоже немного шалопай.<br><br><span style="color:#00ff41;font-size:0.8em;letter-spacing:2px;">[ архивная пометка: это не шутка. проверено. ]</span>'
+      },
+      {
+        id: 'footer-tiny',
+        normal: '© ВЕЛИКИЙ ОРДЕН ШАЛОПАЕВ ВЫСШЕГО РАЗРЯДА · ANNO IGNORAMUS · ВСЕ ПРАВА ЗАРЕЗЕРВИРОВАНЫ АБСУРДОМ',
+        archive: '© ВЕЛИКИЙ ОРДЕН ШАЛОПАЕВ ВЫСШЕГО РАЗРЯДА · ANNO IGNORAMUS · ВСЕ ПРАВА ЗАРЕЗЕРВИРОВАНЫ АБСУРДОМ · <span style="color:#c0392b;">АРХИВНЫЙ РЕЖИМ АКТИВЕН</span>'
+      },
+    ];
+
+    // Сохраняем оригиналы и заменяем
+    replacements.forEach(r => {
+      const el = document.getElementById(r.id);
+      if (!el) return;
+      if (!el.dataset.origHtml) el.dataset.origHtml = el.innerHTML;
+      if (r.archive) {
+        el.style.transition = 'color 0.5s';
+        el.innerHTML = r.archive;
+      }
+    });
+
+    // Все LOSTMEDIA → FOUND?? на время архива
+    document.querySelectorAll('.lostmedia-label').forEach(el => {
+      if (!el.dataset.origText) el.dataset.origText = el.textContent;
+      el.textContent = 'FOUND??';
+      el.style.color = '#00ff41';
+      el.style.textShadow = '0 0 12px #00ff41';
+      el.style.animation = 'none';
+    });
+
+    // Добавляем "архивные марки" к некоторым блокам
+    ['legend-block-2', 'legend-block-3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.querySelector('.archive-stamp')) {
+        const stamp = document.createElement('span');
+        stamp.className = 'archive-stamp';
+        stamp.textContent = 'АРХИВ';
+        el.appendChild(stamp);
+      }
+    });
+
+    showToast('🌑 АРХИВНЫЙ РЕЖИМ АКТИВИРОВАН. Текст обновлён.', 3000);
+    setTimeout(() => showNudge('читай внимательно — архив добавил новые сведения', 4000), 1500);
+
+    // Автоотключение через 60 секунд
+    setTimeout(() => {
+      if (archiveModeActive) deactivateArchiveMode();
+    }, 60000);
+  }
+
+  function deactivateArchiveMode() {
+    archiveModeActive = false;
+    document.body.classList.remove('archive-mode');
+    document.querySelectorAll('.archive-only').forEach(el => { el.style.display = 'none'; });
+    const teacherNameR = document.getElementById('lostmedia-teacher-name');
+    if (teacherNameR) {
+      teacherNameR.style.opacity = '0.4';
+      teacherNameR.style.color = '';
+      teacherNameR.textContent = 'имя: [LOSTMEDIA]';
+    }
+    const blAuthorR = document.getElementById('blacklist-author');
+    if (blAuthorR) {
+      blAuthorR.textContent = '██████';
+      blAuthorR.style.color = '#333';
+      blAuthorR.style.textShadow = '';
+    }
+
+    // Восстанавливаем тексты
+    document.querySelectorAll('[data-orig-html]').forEach(el => {
+      el.innerHTML = el.dataset.origHtml;
+    });
+
+    // LOSTMEDIA обратно
+    document.querySelectorAll('.lostmedia-label').forEach(el => {
+      el.textContent = el.dataset.origText || '[LOSTMEDIA]';
+      el.style.color = '';
+      el.style.textShadow = '';
+      el.style.animation = '';
+    });
+
+    // Убираем архивные марки
+    document.querySelectorAll('.archive-stamp').forEach(s => s.remove());
+
+    showToast('📄 архивный режим деактивирован', 2000);
+  }
+
+  // Архивный режим подключён напрямую к smenuArchive
+
+  // ══════════════════════════════════════════════
+  // 🎯 ПАТЧИМ существующие пасхалки для достижений
+  // ══════════════════════════════════════════════
+
+  // Достижение за досье Хача
+  const _origHachCard = document.querySelector('#members .member-card');
+  if (_origHachCard) {
+    _origHachCard.addEventListener('click', () => {
+      if (hachCardClicks === 0) unlockAchievement('dosye_opened');
+    });
+  }
+
+  // Достижение за казино-джекпот
+  const _origSpinCasino = window.spinCasino;
+  window.spinCasino = function() {
+    _origSpinCasino && _origSpinCasino();
+    // Проверяем джекпот через 1.5с (после спина)
+    setTimeout(() => {
+      const slots = document.getElementById('casino-slots');
+      if (slots) {
+        const parts = slots.textContent.trim().split(/\s+/);
+        if (parts.length === 3 && parts[0] === parts[1] && parts[1] === parts[2]) {
+          unlockAchievement('casino_jackpot');
+        }
+      }
+    }, 1500);
+  };
+
+  // Достижение за 100 кликов
+  document.addEventListener('click', () => {
+    if (totalClicks === 100) unlockAchievement('click100');
+  });
+
+  // Достижение за Манифест (патч через событие)
+  if (manifestPaper) {
+    manifestPaper.addEventListener('mousedown', () => {
+      setTimeout(() => {
+        if (manifestDone) unlockAchievement('manifesto_held');
+      }, 2100);
+    });
+  }
+
+  // Достижение за скролл до конца
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY + window.innerHeight;
+    if (scrolled >= document.body.scrollHeight - 10) {
+      unlockAchievement('scrolled_end');
+    }
+  });
+
+  // Достижение за секретное слово
+  const _origSecretWords = secretWords;
+  Object.keys(secretWords).forEach(word => {
+    const origFn = secretWords[word];
+    secretWords[word] = function() { origFn(); unlockAchievement('secret_word'); };
+  });
+
+  // Достижения за соль/курицу/казино/манифест — через setInterval наблюдатель
+  // (без переназначения функций — просто наблюдаем за DOM и переменными)
+  let _prevSaltClicks = 0, _prevChickenClicks = 0, _prevManifestDone = false;
+  setInterval(() => {
+    // Турбосоль взрыв (10 кликов)
+    if (saltClicks === 0 && _prevSaltClicks >= 9) unlockAchievement('salt_explode');
+    _prevSaltClicks = saltClicks;
+    // Курочка Гниль (7 кликов)
+    if (chickenClicks === 7 && !unlockedAchievements.has('chicken_woke')) unlockAchievement('chicken_woke');
+    // Казино открыто
+    if (document.getElementById('casino-slots') && !unlockedAchievements.has('casino_jackpot')) {
+      const slots = document.getElementById('casino-slots');
+      const parts = (slots.textContent || '').trim().split(/\s+/);
+      if (parts.length === 3 && parts[0] === parts[1] && parts[1] === parts[2] && parts[0] !== '')
+        unlockAchievement('casino_jackpot');
+    }
+    // Манифест удержан
+    if (manifestDone && !_prevManifestDone) unlockAchievement('manifesto_held');
+    _prevManifestDone = manifestDone;
+    // Konami активирован
+    if (konamiActivated && !unlockedAchievements.has('konami_done')) unlockAchievement('konami_done');
+  }, 600);
+
+  // Достижение за Albанию — из угловой зоны тоже
+  menuOverlay && menuOverlay.addEventListener('click', () => {
+    // ничего, просто закрывает
+  });
+
+  // ── Первая подсказка после загрузки через 8 сек ──
+  setTimeout(() => showNudge('здесь есть кое-что скрытое... 👁', 3500), 8000);
 </script>
 </body>
 </html>
